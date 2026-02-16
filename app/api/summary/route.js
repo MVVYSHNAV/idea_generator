@@ -61,18 +61,40 @@ export async function POST(req) {
         ${roadmap ? JSON.stringify(roadmap) : 'No roadmap generated yet.'}
         `;
 
-        const response = await client.chatCompletion({
-            model: "Qwen/Qwen2.5-72B-Instruct",
-            messages: [
-                systemPrompt,
-                { role: 'user', content: `Please generate the final project summary based on this data: ${userContext}` }
-            ],
-            max_tokens: 2000,
-            temperature: 0.5,
-        });
+        const models = [
+            "Qwen/Qwen2.5-72B-Instruct",
+            "meta-llama/Llama-3.3-70B-Instruct",
+            "mistralai/Mistral-7B-Instruct-v0.3"
+        ];
+
+        let response;
+        let lastError;
+
+        for (const model of models) {
+            try {
+                console.log(`Attempting summary generation with model: ${model}`);
+                response = await client.chatCompletion({
+                    model: model,
+                    messages: [
+                        systemPrompt,
+                        { role: 'user', content: `Please generate the final project summary based on this data: ${userContext}` }
+                    ],
+                    max_tokens: 2000,
+                    temperature: 0.5,
+                });
+
+                if (response && response.choices && response.choices.length > 0) {
+                    break; // Success!
+                }
+            } catch (error) {
+                console.error(`Error with model ${model}:`, error.message);
+                lastError = error;
+                // Continue to next model
+            }
+        }
 
         if (!response || !response.choices || response.choices.length === 0) {
-            throw new Error('Invalid response format from provider');
+            throw lastError || new Error('Invalid response format from all providers');
         }
 
         return new Response(JSON.stringify({ summary: response.choices[0].message.content }), {

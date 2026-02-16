@@ -77,15 +77,37 @@ export async function POST(req) {
             Keep responses concise, professional, and actionable.`
         };
 
-        const response = await client.chatCompletion({
-            model: "Qwen/Qwen2.5-72B-Instruct",
-            messages: [systemPrompt, ...messages],
-            max_tokens: 1000,
-            temperature: 0.7,
-        });
+        const models = [
+            "Qwen/Qwen2.5-72B-Instruct",
+            "meta-llama/Llama-3.3-70B-Instruct",
+            "mistralai/Mistral-7B-Instruct-v0.3"
+        ];
+
+        let response;
+        let lastError;
+
+        for (const model of models) {
+            try {
+                console.log(`Attempting chat completion with model: ${model}`);
+                response = await client.chatCompletion({
+                    model: model,
+                    messages: [systemPrompt, ...messages],
+                    max_tokens: 1000,
+                    temperature: 0.7,
+                });
+
+                if (response && response.choices && response.choices.length > 0) {
+                    break; // Success!
+                }
+            } catch (error) {
+                console.error(`Error with model ${model}:`, error.message);
+                lastError = error;
+                // Continue to next model
+            }
+        }
 
         if (!response || !response.choices || response.choices.length === 0) {
-            throw new Error('Invalid response format from provider');
+            throw lastError || new Error('Invalid response format from all providers');
         }
 
         const reply = response.choices[0].message;
