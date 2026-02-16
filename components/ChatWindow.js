@@ -63,7 +63,18 @@ const ChatWindow = ({ initialIdea, onComplete, isMemoryOpen, onToggleMemory, ini
     }, [messages, selectedMode, memory, initialIdea]);
 
     useEffect(() => {
-        scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+        const scrollToBottom = () => {
+            if (scrollRef.current) {
+                scrollRef.current.scrollTo({
+                    top: scrollRef.current.scrollHeight,
+                    behavior: messages.length <= 1 ? "auto" : "smooth"
+                });
+            }
+        };
+
+        // Use requestAnimationFrame to wait for the DOM to update
+        const timeoutId = setTimeout(scrollToBottom, 50);
+        return () => clearTimeout(timeoutId);
     }, [messages, isTyping]);
 
     const handleSend = async () => {
@@ -186,37 +197,42 @@ const ChatWindow = ({ initialIdea, onComplete, isMemoryOpen, onToggleMemory, ini
             </div>
 
             {/* Messages */}
-            <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-1 pt-24">
-                {messages.map((msg, i) => (
-                    <ChatBubble key={msg.id} content={msg.content} role={msg.role} index={i} />
-                ))}
-                <AnimatePresence>
-                    {isTyping && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="flex justify-start mb-4"
-                        >
-                            <div className="bg-card border border-border px-5 py-4 rounded-2xl rounded-bl-md shadow-sm">
-                                <span className="block text-xs font-medium text-muted-foreground mb-2">profzer AI</span>
-                                <div className="flex flex-col gap-2">
-                                    <span className="text-xs italic text-primary/70">{getThinkingText()}</span>
-                                    <div className="flex gap-1.5">
-                                        {[0, 1, 2].map((i) => (
-                                            <motion.div
-                                                key={i}
-                                                className="w-2 h-2 rounded-full bg-primary/40"
-                                                animate={{ opacity: [0.3, 1, 0.3] }}
-                                                transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
-                                            />
-                                        ))}
+            <div
+                ref={scrollRef}
+                className="flex-1 overflow-y-auto p-4 sm:p-6 pt-32 pb-8 scrollbar-hide"
+            >
+                <div className="flex flex-col justify-end min-h-full space-y-4 max-w-3xl mx-auto">
+                    {messages.map((msg, i) => (
+                        <ChatBubble key={msg.id} content={msg.content} role={msg.role} index={i} />
+                    ))}
+                    <AnimatePresence>
+                        {isTyping && (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                                className="flex justify-start mb-4"
+                            >
+                                <div className="bg-card border border-border px-5 py-4 rounded-2xl rounded-bl-md shadow-sm">
+                                    <span className="block text-xs font-medium text-muted-foreground mb-2">profzer AI</span>
+                                    <div className="flex flex-col gap-2">
+                                        <span className="text-xs italic text-primary/70">{getThinkingText()}</span>
+                                        <div className="flex gap-1.5">
+                                            {[0, 1, 2].map((i) => (
+                                                <motion.div
+                                                    key={i}
+                                                    className="w-2 h-2 rounded-full bg-primary/40"
+                                                    animate={{ opacity: [0.3, 1, 0.3] }}
+                                                    transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+                                                />
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
             </div>
 
             {/* Input */}
