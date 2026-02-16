@@ -6,6 +6,7 @@ import { ArrowLeft, Map, Brain, FileText, Loader2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ChatWindow from "@/components/ChatWindow";
 import ProjectSummary from "@/components/ProjectSummary";
+import ReplyLevelToggle from "@/components/ReplyLevelToggle";
 import { useState, useEffect } from "react";
 import { getProjectState, clearProjectState, saveProjectState } from "@/lib/storage";
 
@@ -18,6 +19,7 @@ export default function DiscussPage() {
     const [summary, setSummary] = useState(null);
     const [isSummaryOpen, setIsSummaryOpen] = useState(false);
     const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
+    const [replyMode, setReplyMode] = useState('non-tech');
 
     useEffect(() => {
         // First priority: Restore from unified project storage
@@ -27,6 +29,7 @@ export default function DiscussPage() {
             setInitialState(savedProject);
             if (savedProject.structuredRoadmap) setShowRoadmapCTA(true);
             if (savedProject.summary) setSummary(savedProject.summary);
+            if (savedProject.replyMode) setReplyMode(savedProject.replyMode);
             return;
         }
 
@@ -54,7 +57,8 @@ export default function DiscussPage() {
                 body: JSON.stringify({
                     idea: idea,
                     memory: projectState?.projectMemory || {},
-                    roadmap: projectState?.structuredRoadmap || null
+                    roadmap: projectState?.structuredRoadmap || null,
+                    replyMode: replyMode
                 }),
             });
 
@@ -76,6 +80,17 @@ export default function DiscussPage() {
             alert("Failed to generate summary. Please try again.");
         } finally {
             setIsGeneratingSummary(false);
+        }
+    };
+
+    const handleModeChange = (newMode) => {
+        setReplyMode(newMode);
+        const projectState = getProjectState();
+        if (projectState) {
+            saveProjectState({
+                ...projectState,
+                replyMode: newMode
+            });
         }
     };
 
@@ -112,7 +127,12 @@ export default function DiscussPage() {
                     </Button>
                 </div>
 
-                <h1 className="font-display font-bold text-xs sm:text-base truncate max-w-[120px] sm:max-w-none text-center px-2">
+                <div className="hidden lg:flex items-center gap-2 bg-muted/30 px-3 py-1.5 rounded-2xl border border-border/20">
+                    <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest whitespace-nowrap">AI Tone</span>
+                    <ReplyLevelToggle mode={replyMode} onChange={handleModeChange} />
+                </div>
+
+                <h1 className="font-display font-bold text-xs sm:text-base truncate max-w-[80px] sm:max-w-none text-center px-2">
                     Co-Founder AI
                 </h1>
 
@@ -164,6 +184,8 @@ export default function DiscussPage() {
                     <ChatWindow
                         initialIdea={idea}
                         initialState={initialState}
+                        replyMode={replyMode}
+                        onModeChange={handleModeChange}
                         onComplete={() => setShowRoadmapCTA(true)}
                         isMemoryOpen={isMemoryOpen}
                         onToggleMemory={setIsMemoryOpen}

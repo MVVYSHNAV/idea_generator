@@ -30,9 +30,29 @@ const MODE_PROMPTS = {
     Focus on unit economics, defensibility (moats), scalability, and long-term exit potential. Address the "Why now?" and "How big?".`
 };
 
+const REPLY_MODE_PROMPTS = {
+    'non-tech': `You are explaining concepts to a non-technical user.
+Rules:
+- Use simple words
+- Avoid technical jargon
+- Focus on ideas, outcomes, and clarity
+- Explain as if to a smart beginner
+- Never assume technical knowledge
+- NO CODE, no architecture diagrams, no implementation details.`,
+
+    'tech': `You are explaining concepts to a technical user.
+Rules:
+- Be precise and structured
+- Use correct technical terminology
+- Explain trade-offs and constraints
+- Assume engineering literacy
+- Avoid over-simplification
+- FEEL FREE to mention APIs, data models, or system flows.`
+};
+
 export async function POST(req) {
     try {
-        const { messages, selectedMode = 'brainstorm' } = await req.json();
+        const { messages, selectedMode = 'brainstorm', replyMode = 'non-tech' } = await req.json();
 
         if (!messages || !Array.isArray(messages)) {
             return new Response(JSON.stringify({ error: 'Messages are required' }), {
@@ -41,12 +61,19 @@ export async function POST(req) {
             });
         }
 
-        const systemPromptContent = MODE_PROMPTS[selectedMode] || MODE_PROMPTS.brainstorm;
+        const personaContent = MODE_PROMPTS[selectedMode] || MODE_PROMPTS.brainstorm;
+        const replyLevelContent = REPLY_MODE_PROMPTS[replyMode] || REPLY_MODE_PROMPTS['non-tech'];
 
         const systemPrompt = {
             role: 'system',
             content: `You are an expert co-founder and startup advisor strictly operating in ${selectedMode.toUpperCase()} mode. 
-            ${systemPromptContent} 
+            
+            PERSONA INSTRUCTIONS:
+            ${personaContent} 
+            
+            REPLY STYLE INSTRUCTIONS:
+            ${replyLevelContent}
+
             Keep responses concise, professional, and actionable.`
         };
 

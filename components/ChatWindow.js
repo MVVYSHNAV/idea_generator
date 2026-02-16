@@ -7,10 +7,11 @@ import { Button } from "@/components/ui/button";
 import ChatBubble from "./ChatBubble";
 import ModeSwitcher from "./ModeSwitcher";
 import ProjectMemory from "./ProjectMemory";
+import ReplyLevelToggle from "./ReplyLevelToggle";
 import TypingIndicator from "./TypingIndicator";
 import { saveProjectState } from "@/lib/storage";
 
-const ChatWindow = ({ initialIdea, onComplete, isMemoryOpen, onToggleMemory, initialState }) => {
+const ChatWindow = ({ initialIdea, onComplete, isMemoryOpen, onToggleMemory, initialState, replyMode, onModeChange }) => {
     const [messages, setMessages] = useState(initialState?.chatMessages || []);
     const [input, setInput] = useState("");
     const [isTyping, setIsTyping] = useState(false);
@@ -79,7 +80,8 @@ const ChatWindow = ({ initialIdea, onComplete, isMemoryOpen, onToggleMemory, ini
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     messages: updatedMessages.map(({ role, content }) => ({ role, content })),
-                    selectedMode
+                    selectedMode,
+                    replyMode
                 }),
             });
 
@@ -162,10 +164,13 @@ const ChatWindow = ({ initialIdea, onComplete, isMemoryOpen, onToggleMemory, ini
                 isOpen={isMemoryOpen}
                 onClose={() => onToggleMemory(false)}
             />
-            {/* Mode Switcher Overlay */}
-            <div className="absolute top-4 left-0 right-0 z-20 flex justify-center pointer-events-none">
+            {/* Mode Swer & Reply Level Overlay */}
+            <div className="absolute top-4 left-0 right-0 z-20 flex flex-col items-center gap-2 pointer-events-none px-4">
                 <div className="pointer-events-auto shadow-2xl max-w-[calc(100vw-2rem)] rounded-2xl">
                     <ModeSwitcher activeMode={selectedMode} onModeChange={setSelectedMode} />
+                </div>
+                <div className="pointer-events-auto shadow-lg lg:hidden bg-card/50 backdrop-blur-md rounded-xl p-0.5 border border-border/20">
+                    <ReplyLevelToggle mode={replyMode} onChange={onModeChange} />
                 </div>
             </div>
 

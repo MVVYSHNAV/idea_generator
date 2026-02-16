@@ -2,15 +2,35 @@ import { InferenceClient } from "@huggingface/inference";
 
 const client = new InferenceClient(process.env.HF_TOKEN || process.env.HUGGING_FACE_API_KEY);
 
+const SUMMARY_MODE_PROMPTS = {
+    'non-tech': `The audience is NON-TECHNICAL founders and business users.
+Rules:
+- Focus on business value, market impact, and user outcomes.
+- Use analogies for technical parts.
+- Avoid implementation details.
+- Professional, clear, and executive-level language.`,
+
+    'tech': `The audience is TECHNICAL developers and architects.
+Rules:
+- Focus on technical architecture, system trade-offs, and data models.
+- Use precise terminology (APIs, state management, database schemas).
+- Include high-level implementation details and engineering priorities.
+- Analytical, direct, and architecture-first language.`
+};
+
 export async function POST(req) {
     try {
-        const { idea, memory, roadmap } = await req.json();
+        const { idea, memory, roadmap, replyMode = 'non-tech' } = await req.json();
+
+        const modeInstructions = SUMMARY_MODE_PROMPTS[replyMode] || SUMMARY_MODE_PROMPTS['non-tech'];
 
         const systemPrompt = {
             role: 'system',
-            content: `You are an expert executive consultant. Your task is to generate a professional, high-level project summary for a startup idea.
+            content: `You are an expert executive consultant. Your task is to generate a professional project summary for a startup idea.
             
-            RULES:
+            ${modeInstructions}
+
+            GENERAL RULES:
             - Professional, formal tone.
             - NO emojis.
             - NO chat-like conversational filler.
