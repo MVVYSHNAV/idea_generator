@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Sparkles, MessageCircle, Map } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Logo from "./Logo";
 
 const HeroSection = () => {
     const router = useRouter();
@@ -27,15 +28,18 @@ const HeroSection = () => {
             </div>
 
             <div className="relative z-10 max-w-4xl mx-auto text-center">
-                {/* Badge */}
+                {/* Logo & Badge */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary text-secondary-foreground text-sm font-medium mb-8"
+                    className="flex flex-col items-center gap-6 mb-12"
                 >
-                    <Sparkles className="w-4 h-4 text-accent" />
-                    AI-Powered Project Planning
+                    <Logo size="lg" />
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/50 backdrop-blur-sm text-secondary-foreground text-sm font-medium border border-border/10">
+                        <Sparkles className="w-4 h-4 text-accent" />
+                        AI-Powered Project Planning
+                    </div>
                 </motion.div>
 
                 {/* Headline */}
@@ -56,7 +60,7 @@ const HeroSection = () => {
                     transition={{ duration: 0.6, delay: 0.2 }}
                     className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed"
                 >
-                    Chat with your AI co-founder. Brainstorm freely, refine ideas together,
+                    Chat with profzer AI. Brainstorm freely, refine ideas together,
                     and get a structured project plan — all in minutes.
                 </motion.p>
 
@@ -96,7 +100,7 @@ const HeroSection = () => {
                 >
                     {[
                         { icon: Sparkles, title: "Capture Ideas", desc: "Dump your raw thoughts freely" },
-                        { icon: MessageCircle, title: "Discuss & Refine", desc: "Chat with your AI co-founder" },
+                        { icon: MessageCircle, title: "Discuss & Refine", desc: "Chat with profzer AI" },
                         { icon: Map, title: "Get Roadmap", desc: "Structured plan, ready to execute" },
                     ].map((step, i) => (
                         <motion.div

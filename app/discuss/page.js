@@ -7,11 +7,14 @@ import { Button } from "@/components/ui/button";
 import ChatWindow from "@/components/ChatWindow";
 import ProjectSummary from "@/components/ProjectSummary";
 import ReplyLevelToggle from "@/components/ReplyLevelToggle";
+import Logo from "@/components/Logo";
 import { useState, useEffect } from "react";
 import { getProjectState, clearProjectState, saveProjectState } from "@/lib/storage";
+import { useAlert } from "@/context/AlertContext";
 
 export default function DiscussPage() {
     const router = useRouter();
+    const { confirm, showError, showSuccess, showInfo } = useAlert();
     const [idea, setIdea] = useState("");
     const [initialState, setInitialState] = useState(null);
     const [showRoadmapCTA, setShowRoadmapCTA] = useState(false);
@@ -67,6 +70,7 @@ export default function DiscussPage() {
             const data = await response.json();
             setSummary(data.summary);
             setIsSummaryOpen(true);
+            showSuccess("Executive Summary Ready", replyMode === 'tech' ? "Technical background-aware report generated." : "Your project brief is ready for export.");
 
             // Persist the summary
             if (projectState) {
@@ -77,7 +81,7 @@ export default function DiscussPage() {
             }
         } catch (error) {
             console.error('Summary Error:', error);
-            alert("Failed to generate summary. Please try again.");
+            showError("Synthesis Failed", replyMode === 'tech' ? "Unstable LLM connection. Please retry the request." : "Sorry, I couldn't wrap up your vision just yet. Please try again.");
         } finally {
             setIsGeneratingSummary(false);
         }
@@ -94,9 +98,17 @@ export default function DiscussPage() {
         }
     };
 
-    const handleClearProject = () => {
-        if (confirm("Starting a new project will clear your current progress. Continue?")) {
+    const handleClearProject = async () => {
+        const ok = await confirm({
+            title: "Start Fresh Session?",
+            message: "This will wipe all tracked decisions and roadmap data. This cannot be undone.",
+            confirmText: "Wipe & Restart",
+            variant: "destructive"
+        });
+
+        if (ok) {
             clearProjectState();
+            showInfo("Workspace Reset", "Project memory cleared.");
             router.push('/idea');
         }
     };
@@ -132,8 +144,9 @@ export default function DiscussPage() {
                     <ReplyLevelToggle mode={replyMode} onChange={handleModeChange} />
                 </div>
 
-                <h1 className="font-display font-bold text-xs sm:text-base truncate max-w-[80px] sm:max-w-none text-center px-2">
-                    Co-Founder AI
+                <Logo size="sm" className="hidden sm:flex" />
+                <h1 className="font-display font-bold text-xs sm:hidden truncate max-w-[80px]">
+                    profzer AI
                 </h1>
 
                 <div className="flex items-center gap-1 sm:gap-2">

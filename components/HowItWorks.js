@@ -12,7 +12,7 @@ const features = [
     {
         icon: MessageSquare,
         title: "Natural Conversation",
-        description: "It feels like talking to a smart co-founder who asks the right questions at the right time.",
+        description: "It feels like talking to a smart profzer AI who asks the right questions at the right time.",
     },
     {
         icon: BarChart3,

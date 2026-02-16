@@ -8,19 +8,29 @@ import { ArrowRight, Plus, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { projectExists, clearProjectState } from "@/lib/storage";
 import { useEffect, useState } from "react";
+import { useAlert } from "@/context/AlertContext";
 
 export default function Home() {
   const router = useRouter();
   const [hasProject, setHasProject] = useState(false);
+  const { confirm, showSuccess } = useAlert();
 
   useEffect(() => {
     setHasProject(projectExists());
   }, []);
 
-  const handleNewProject = () => {
+  const handleNewProject = async () => {
     if (hasProject) {
-      if (confirm("Starting a new project will clear your current progress. Continue?")) {
+      const ok = await confirm({
+        title: "Start New Project?",
+        message: "Starting a new project will clear your current progress. This cannot be undone.",
+        confirmText: "Start Fresh",
+        variant: "destructive"
+      });
+
+      if (ok) {
         clearProjectState();
+        showSuccess("Project Cleared", "Ready for your next big idea!");
         router.push("/idea");
       }
     } else {

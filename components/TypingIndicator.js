@@ -10,7 +10,7 @@ const TypingIndicator = () => (
         className="flex justify-start mb-4"
     >
         <div className="bg-card border border-border px-5 py-4 rounded-2xl rounded-bl-md shadow-sm">
-            <span className="block text-xs font-medium text-muted-foreground mb-2">AI Co-Founder</span>
+            <span className="block text-xs font-medium text-muted-foreground mb-2">profzer AI</span>
             <div className="flex gap-1.5">
                 {[0, 1, 2].map((i) => (
                     <motion.div

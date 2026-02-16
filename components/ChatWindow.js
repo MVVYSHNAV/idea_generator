@@ -10,8 +10,10 @@ import ProjectMemory from "./ProjectMemory";
 import ReplyLevelToggle from "./ReplyLevelToggle";
 import TypingIndicator from "./TypingIndicator";
 import { saveProjectState } from "@/lib/storage";
+import { useAlert } from "@/context/AlertContext";
 
 const ChatWindow = ({ initialIdea, onComplete, isMemoryOpen, onToggleMemory, initialState, replyMode, onModeChange }) => {
+    const { showSuccess, showError, showInfo } = useAlert();
     const [messages, setMessages] = useState(initialState?.chatMessages || []);
     const [input, setInput] = useState("");
     const [isTyping, setIsTyping] = useState(false);
@@ -102,6 +104,8 @@ const ChatWindow = ({ initialIdea, onComplete, isMemoryOpen, onToggleMemory, ini
                         localStorage.setItem('project-roadmap', JSON.stringify(potentialJson));
                         cleanContent = data.content.replace(jsonMatch[0], "").trim();
                         if (!cleanContent) cleanContent = "I've generated your strategic roadmap! You can view it by clicking the button in the top right.";
+
+                        showSuccess("Roadmap Synthesized", replyMode === 'tech' ? "Architectural phases mapped to storage." : "Strategic plan is now available in your roadmap view.");
                         onComplete?.();
                     }
                 }
@@ -121,14 +125,20 @@ const ChatWindow = ({ initialIdea, onComplete, isMemoryOpen, onToggleMemory, ini
                 const decision = data.content.split(/[.!?]/).find(s =>
                     s.toLowerCase().includes("decided") || s.toLowerCase().includes("agreed")
                 );
-                if (decision) setMemory(prev => ({ ...prev, decisions: [...new Set([...prev.decisions, decision.trim()])] }));
+                if (decision) {
+                    setMemory(prev => ({ ...prev, decisions: [...new Set([...prev.decisions, decision.trim()])] }));
+                    showInfo("Decision Tracked", "Added to project memory.");
+                }
             }
 
             if (content.includes("assuming") || content.includes("assumption")) {
                 const assumption = data.content.split(/[.!?]/).find(s =>
                     s.toLowerCase().includes("assum")
                 );
-                if (assumption) setMemory(prev => ({ ...prev, assumptions: [...new Set([...prev.assumptions, assumption.trim()])] }));
+                if (assumption) {
+                    setMemory(prev => ({ ...prev, assumptions: [...new Set([...prev.assumptions, assumption.trim()])] }));
+                    showInfo("Assumption Noted", "Stored for risk analysis.");
+                }
             }
 
             // If we've had a few exchanges, we could trigger the completion
@@ -137,6 +147,7 @@ const ChatWindow = ({ initialIdea, onComplete, isMemoryOpen, onToggleMemory, ini
             }
         } catch (error) {
             console.error('Chat error:', error);
+            showError("AI Signal Lost", replyMode === 'tech' ? "Endpoint connection failed. Check your API token." : "Sorry, I lost my connection. Please check your internet or try again.");
             setMessages((prev) => [
                 ...prev,
                 { id: Date.now() + 1, role: "assistant", content: "Sorry, I ran into an issue connecting to my brain. Please check your connection or try again." },
@@ -188,7 +199,7 @@ const ChatWindow = ({ initialIdea, onComplete, isMemoryOpen, onToggleMemory, ini
                             className="flex justify-start mb-4"
                         >
                             <div className="bg-card border border-border px-5 py-4 rounded-2xl rounded-bl-md shadow-sm">
-                                <span className="block text-xs font-medium text-muted-foreground mb-2">AI Co-Founder</span>
+                                <span className="block text-xs font-medium text-muted-foreground mb-2">profzer AI</span>
                                 <div className="flex flex-col gap-2">
                                     <span className="text-xs italic text-primary/70">{getThinkingText()}</span>
                                     <div className="flex gap-1.5">

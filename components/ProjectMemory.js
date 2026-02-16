@@ -111,7 +111,7 @@ export default function ProjectMemory({ memory, isOpen, onClose }) {
 
                         <div className="p-6 border-t border-border bg-card/50">
                             <p className="text-[10px] text-muted-foreground text-center uppercase tracking-tighter font-semibold">
-                                Updated in real-time by AI Co-Founder
+                                Updated in real-time by profzer AI
                             </p>
                         </div>
                     </motion.div>

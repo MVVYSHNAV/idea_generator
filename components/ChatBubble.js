@@ -14,13 +14,13 @@ const ChatBubble = ({ content, role, index }) => {
         >
             <div
                 className={`max-w-[80%] px-5 py-3.5 rounded-2xl text-[15px] leading-relaxed whitespace-pre-wrap ${isAi
-                        ? "bg-card border border-border text-foreground rounded-bl-md shadow-sm"
-                        : "gradient-bg text-primary-foreground rounded-br-md shadow-md"
+                    ? "bg-card border border-border text-foreground rounded-bl-md shadow-sm"
+                    : "gradient-bg text-primary-foreground rounded-br-md shadow-md"
                     }`}
             >
                 {isAi && (
                     <span className="block text-xs font-medium text-muted-foreground mb-1.5">
-                        AI Co-Founder
+                        profzer AI
                     </span>
                 )}
                 {content}

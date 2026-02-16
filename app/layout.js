@@ -1,5 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { AlertProvider } from "@/context/AlertContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -12,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Idea Navigator | Your AI Co-founder",
-  description: "Accelerate your startup journey with an AI-powered strategic partner.",
+  title: "Idea Navigator | profzer AI",
+  description: "Accelerate your startup journey with profzer AI — your strategic 24/7 co-founder.",
 };
 
 export default function RootLayout({ children }) {
@@ -22,14 +23,16 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
-        <main className="flex-1">
-          {children}
-        </main>
-        <footer className="py-8 border-t border-border bg-card/30 backdrop-blur-sm text-center">
-          <p className="text-sm text-muted-foreground">
-            Developed by <span className="font-semibold text-foreground">profzer</span>
-          </p>
-        </footer>
+        <AlertProvider>
+          <main className="flex-1">
+            {children}
+          </main>
+          <footer className="py-8 border-t border-border bg-card/30 backdrop-blur-sm text-center">
+            <p className="text-sm text-muted-foreground">
+              Developed by <span className="font-semibold text-foreground">profzer</span>
+            </p>
+          </footer>
+        </AlertProvider>
       </body>
     </html>
   );

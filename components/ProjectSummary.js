@@ -1,18 +1,17 @@
 'use client';
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Download, FileText, Printer, X, Copy, Check } from "lucide-react";
-import { useState } from "react";
+import { Download, FileText, Printer, X, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ReactMarkdown from 'react-markdown';
+import { useAlert } from "@/context/AlertContext";
 
 export default function ProjectSummary({ summary, isOpen, onClose }) {
-    const [copied, setCopied] = useState(false);
+    const { showSuccess } = useAlert();
 
     const handleCopy = () => {
         navigator.clipboard.writeText(summary);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+        showSuccess("Copied", "Report content added to clipboard.");
     };
 
     const handlePrint = () => {
@@ -26,6 +25,7 @@ export default function ProjectSummary({ summary, isOpen, onClose }) {
         a.href = url;
         a.download = `project-summary-${Date.now()}.md`;
         a.click();
+        showSuccess("Summary Downloaded", "Strategic brief saved to your device.");
     };
 
     return (
@@ -54,7 +54,7 @@ export default function ProjectSummary({ summary, isOpen, onClose }) {
                             </div>
                             <div className="flex items-center gap-1 sm:gap-2">
                                 <Button variant="ghost" size="icon" onClick={handleCopy} title="Copy to clipboard" className="h-8 w-8 sm:h-10 sm:w-10">
-                                    {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                                    <Copy className="w-4 h-4" />
                                 </Button>
                                 <Button variant="ghost" size="icon" onClick={handlePrint} title="Print" className="h-8 w-8 sm:h-10 sm:w-10 hidden sm:flex">
                                     <Printer className="w-4 h-4" />
