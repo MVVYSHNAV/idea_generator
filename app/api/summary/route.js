@@ -62,8 +62,7 @@ export async function POST(req) {
         `;
 
         const response = await client.chatCompletion({
-            model: "Qwen/Qwen2.5-Coder-32B-Instruct",
-            provider: "together",
+            model: "Qwen/Qwen2.5-72B-Instruct",
             messages: [
                 systemPrompt,
                 { role: 'user', content: `Please generate the final project summary based on this data: ${userContext}` }
