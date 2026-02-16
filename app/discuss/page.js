@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowLeft, Map, Brain, FileText, Loader2 } from "lucide-react";
+import { ArrowLeft, Map, Brain, FileText, Loader2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ChatWindow from "@/components/ChatWindow";
 import ProjectSummary from "@/components/ProjectSummary";
@@ -80,7 +80,7 @@ export default function DiscussPage() {
     };
 
     const handleClearProject = () => {
-        if (confirm("Are you sure you want to clear this project and start fresh? This cannot be undone.")) {
+        if (confirm("Starting a new project will clear your current progress. Continue?")) {
             clearProjectState();
             router.push('/idea');
         }
@@ -89,63 +89,72 @@ export default function DiscussPage() {
     return (
         <div className="h-screen flex flex-col bg-background">
             {/* Header */}
-            <header className="flex items-center justify-between p-4 border-b border-border bg-card/80 backdrop-blur-sm shrink-0">
-                <Button
-                    variant="ghost"
-                    onClick={() => router.push("/idea")}
-                    className="text-muted-foreground"
-                >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    Back
-                </Button>
-                <Button
-                    variant="ghost"
-                    onClick={handleClearProject}
-                    className="text-muted-foreground hover:text-destructive transition-colors text-xs"
-                >
-                    Clear Project
-                </Button>
-                <h1 className="font-display font-semibold text-sm sm:text-base">
-                    Discussion with AI Co-Founder
+            <header className="sticky top-0 z-[40] flex items-center justify-between p-3 sm:p-4 border-b border-border bg-card/80 backdrop-blur-sm shrink-0">
+                <div className="flex items-center gap-1 sm:gap-2">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => router.push("/idea")}
+                        className="text-muted-foreground px-2 sm:px-3"
+                    >
+                        <ArrowLeft className="w-4 h-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Back</span>
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleClearProject}
+                        className="text-muted-foreground hover:text-destructive transition-colors text-[10px] sm:text-xs px-2"
+                    >
+                        <Plus className="w-4 h-4 sm:mr-1.5" />
+                        <span className="hidden sm:inline">New Project</span>
+                        <span className="sm:hidden text-muted-foreground font-bold uppercase">New</span>
+                    </Button>
+                </div>
+
+                <h1 className="font-display font-bold text-xs sm:text-base truncate max-w-[120px] sm:max-w-none text-center px-2">
+                    Co-Founder AI
                 </h1>
-                <div className="flex items-center gap-2">
+
+                <div className="flex items-center gap-1 sm:gap-2">
                     <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => setIsMemoryOpen(true)}
-                        className="text-muted-foreground hover:text-primary transition-colors"
+                        className="text-muted-foreground hover:text-primary transition-colors h-8 w-8 sm:h-10 sm:w-10"
                     >
-                        <Brain className="w-5 h-5" />
+                        <Brain className="w-4 h-4 sm:w-5 sm:h-5" />
                     </Button>
                     {showRoadmapCTA && (
-                        <div className="flex gap-2">
+                        <div className="flex gap-1 sm:gap-2">
                             <Button
                                 onClick={handleGenerateSummary}
                                 disabled={isGeneratingSummary}
                                 variant="outline"
                                 size="sm"
-                                className="border-primary/20 hover:bg-primary/5 hidden sm:flex"
+                                className="border-primary/20 hover:bg-primary/5 h-8 px-2 sm:h-9 sm:px-4"
                             >
                                 {isGeneratingSummary ? (
-                                    <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                                    <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" />
                                 ) : (
-                                    <FileText className="w-4 h-4 mr-1.5" />
+                                    <FileText className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1.5" />
                                 )}
-                                Final Summary
+                                <span className="hidden sm:inline text-xs">Summary</span>
                             </Button>
                             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
                                 <Button
                                     onClick={() => router.push("/roadmap")}
                                     size="sm"
-                                    className="gradient-bg text-primary-foreground rounded-lg hover:opacity-90 shadow-sm"
+                                    className="gradient-bg text-primary-foreground rounded-lg hover:opacity-90 shadow-sm h-8 px-2 sm:h-9 sm:px-4"
                                 >
-                                    <Map className="w-4 h-4 mr-1.5" />
-                                    View Roadmap
+                                    <Map className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1.5" />
+                                    <span className="hidden sm:inline text-xs">Roadmap</span>
+                                    <span className="sm:hidden text-[10px]">PLAN</span>
                                 </Button>
                             </motion.div>
                         </div>
                     )}
-                    {!showRoadmapCTA && <div className="w-[100px]" />}
+                    {!showRoadmapCTA && <div className="w-[32px] sm:w-[100px]" />}
                 </div>
             </header>
 

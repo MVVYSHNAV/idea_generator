@@ -163,8 +163,8 @@ const ChatWindow = ({ initialIdea, onComplete, isMemoryOpen, onToggleMemory, ini
                 onClose={() => onToggleMemory(false)}
             />
             {/* Mode Switcher Overlay */}
-            <div className="absolute top-4 left-0 right-0 z-20 flex justify-center pointer-events-none px-4">
-                <div className="pointer-events-auto shadow-2xl">
+            <div className="absolute top-4 left-0 right-0 z-20 flex justify-center pointer-events-none">
+                <div className="pointer-events-auto shadow-2xl max-w-[calc(100vw-2rem)] rounded-2xl">
                     <ModeSwitcher activeMode={selectedMode} onModeChange={setSelectedMode} />
                 </div>
             </div>

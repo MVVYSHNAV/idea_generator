@@ -49,7 +49,7 @@ const modes = [
 
 export default function ModeSwitcher({ activeMode, onModeChange }) {
     return (
-        <div className="flex flex-wrap gap-2 p-2 bg-card/50 backdrop-blur-md border border-border rounded-2xl">
+        <div className="flex sm:flex-wrap gap-2 p-2 bg-card/50 backdrop-blur-md border border-border rounded-2xl overflow-x-auto no-scrollbar max-w-full scroll-smooth">
             {modes.map((mode) => {
                 const Icon = mode.icon;
                 const isActive = activeMode === mode.id;
@@ -59,7 +59,7 @@ export default function ModeSwitcher({ activeMode, onModeChange }) {
                         key={mode.id}
                         onClick={() => onModeChange(mode.id)}
                         className={cn(
-                            "flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-300 group relative",
+                            "flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-300 group relative shrink-0",
                             isActive
                                 ? "bg-white dark:bg-slate-800 shadow-sm ring-1 ring-border"
                                 : "hover:bg-card"
@@ -84,6 +84,15 @@ export default function ModeSwitcher({ activeMode, onModeChange }) {
                     </button>
                 );
             })}
+            <style jsx>{`
+                .no-scrollbar::-webkit-scrollbar {
+                    display: none;
+                }
+                .no-scrollbar {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                }
+            `}</style>
         </div>
     );
 }

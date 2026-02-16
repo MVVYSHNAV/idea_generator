@@ -26,7 +26,7 @@ export default function IdeaPage() {
     return (
         <div className="min-h-screen bg-background flex flex-col">
             {/* Header */}
-            <header className="p-4 sm:p-6">
+            <header className="sticky top-0 z-50 p-4 sm:p-6 bg-background/50 backdrop-blur-md border-b border-border/10">
                 <Button
                     variant="ghost"
                     onClick={() => router.push("/")}

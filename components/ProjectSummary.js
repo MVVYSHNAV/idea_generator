@@ -44,25 +44,25 @@ export default function ProjectSummary({ summary, isOpen, onClose }) {
                         initial={{ opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        className="relative w-full max-w-4xl max-h-[90vh] bg-card border border-border rounded-3xl shadow-2xl overflow-hidden flex flex-col print:shadow-none print:border-none print:max-h-none print:relative print:w-full"
+                        className="relative w-full sm:max-w-4xl h-[95vh] sm:h-auto max-h-[95vh] bg-card border border-border rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col print:shadow-none print:border-none print:max-h-none print:relative print:w-full"
                     >
                         {/* Header - Hidden on print */}
-                        <div className="p-6 border-b border-border flex items-center justify-between bg-card shrink-0 print:hidden">
+                        <div className="p-4 sm:p-6 border-b border-border flex items-center justify-between bg-card shrink-0 print:hidden">
                             <div className="flex items-center gap-2">
                                 <FileText className="w-5 h-5 text-primary" />
-                                <h2 className="font-display font-bold text-xl">Project Summary report</h2>
+                                <h2 className="font-display font-bold text-base sm:text-xl truncate max-w-[150px] sm:max-w-none">Project Report</h2>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <Button variant="ghost" size="icon" onClick={handleCopy} title="Copy to clipboard">
+                            <div className="flex items-center gap-1 sm:gap-2">
+                                <Button variant="ghost" size="icon" onClick={handleCopy} title="Copy to clipboard" className="h-8 w-8 sm:h-10 sm:w-10">
                                     {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
                                 </Button>
-                                <Button variant="ghost" size="icon" onClick={handlePrint} title="Print">
+                                <Button variant="ghost" size="icon" onClick={handlePrint} title="Print" className="h-8 w-8 sm:h-10 sm:w-10 hidden sm:flex">
                                     <Printer className="w-4 h-4" />
                                 </Button>
-                                <Button variant="ghost" size="icon" onClick={handleDownload} title="Download Markdown">
+                                <Button variant="ghost" size="icon" onClick={handleDownload} title="Download Markdown" className="h-8 w-8 sm:h-10 sm:w-10">
                                     <Download className="w-4 h-4" />
                                 </Button>
-                                <div className="w-px h-6 bg-border mx-2" />
+                                <div className="w-px h-6 bg-border mx-1 sm:mx-2" />
                                 <button onClick={onClose} className="p-2 hover:bg-muted rounded-full transition-colors">
                                     <X className="w-5 h-5" />
                                 </button>
@@ -70,8 +70,8 @@ export default function ProjectSummary({ summary, isOpen, onClose }) {
                         </div>
 
                         {/* Content */}
-                        <div className="flex-1 overflow-y-auto p-8 md:p-12 print:overflow-visible print:p-0">
-                            <div className="max-w-3xl mx-auto prose prose-invert prose-slate print:prose-neutral print:max-w-none">
+                        <div className="flex-1 overflow-y-auto p-5 sm:p-12 print:overflow-visible print:p-0">
+                            <div className="max-w-3xl mx-auto prose prose-invert prose-sm sm:prose-base prose-slate print:prose-neutral print:max-w-none">
                                 <ReactMarkdown>{summary}</ReactMarkdown>
                             </div>
                         </div>

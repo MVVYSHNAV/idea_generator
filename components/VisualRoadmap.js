@@ -54,26 +54,26 @@ export default function VisualRoadmap({ data }) {
                 <Card icon={Layout} title="MVP Features" items={data.mvp_features} color="text-purple-500" />
             </div>
 
-            <div className="relative pl-8 md:pl-0">
+            <div className="relative pl-0 sm:pl-0">
                 {/* Timeline Line */}
-                <div className="absolute left-[39px] md:left-1/2 top-0 bottom-0 w-0.5 bg-border origin-top timeline-line hidden md:block" />
+                <div className="absolute left-[20px] md:left-1/2 top-0 bottom-0 w-0.5 bg-border origin-top timeline-line block" />
 
-                <div className="space-y-12 relative" ref={timelineRef}>
+                <div className="space-y-8 md:space-y-12 relative" ref={timelineRef}>
                     {data.roadmap_phases?.map((phase, i) => (
-                        <div key={i} className={`flex flex-col md:flex-row items-start md:items-center gap-8 ${i % 2 === 0 ? "md:flex-row-reverse" : ""}`}>
+                        <div key={i} className={`flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-8 ${i % 2 === 0 ? "md:flex-row-reverse" : ""}`}>
                             {/* Point on timeline */}
-                            <div className="absolute left-[35px] md:left-1/2 md:-translate-x-1/2 w-3 h-3 rounded-full bg-primary ring-4 ring-background z-10" />
+                            <div className="absolute left-[16.5px] md:left-1/2 md:-translate-x-1/2 w-2.5 h-2.5 rounded-full bg-primary ring-4 ring-background z-10" />
 
-                            <div className="flex-1 w-full phase-card">
-                                <div className="p-6 bg-card/50 backdrop-blur-sm border border-border rounded-3xl shadow-sm hover:shadow-md transition-shadow">
-                                    <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                                        <CheckCircle2 className="w-5 h-5 text-primary" />
+                            <div className="flex-1 w-full pl-10 md:pl-0 phase-card">
+                                <div className="p-5 sm:p-6 bg-card/50 backdrop-blur-sm border border-border rounded-2xl sm:rounded-3xl shadow-sm hover:shadow-md transition-shadow">
+                                    <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 flex items-center gap-2">
+                                        <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                                         {phase.phase}
                                     </h3>
                                     <ul className="space-y-2">
                                         {phase.tasks?.map((task, j) => (
-                                            <li key={j} className="text-sm text-muted-foreground flex items-start gap-2">
-                                                <Circle className="w-1.5 h-1.5 mt-1.5 fill-current opacity-30" />
+                                            <li key={j} className="text-xs sm:text-sm text-muted-foreground flex items-start gap-2">
+                                                <Circle className="w-1.5 h-1.5 mt-1.5 fill-current opacity-30 shrink-0" />
                                                 {task}
                                             </li>
                                         ))}
