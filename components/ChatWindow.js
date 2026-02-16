@@ -5,12 +5,20 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ChatBubble from "./ChatBubble";
+import ModeSwitcher from "./ModeSwitcher";
+import ProjectMemory from "./ProjectMemory";
 import TypingIndicator from "./TypingIndicator";
 
-const ChatWindow = ({ initialIdea, onComplete }) => {
+const ChatWindow = ({ initialIdea, onComplete, isMemoryOpen, onToggleMemory }) => {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState("");
     const [isTyping, setIsTyping] = useState(false);
+    const [selectedMode, setSelectedMode] = useState('brainstorm');
+    const [memory, setMemory] = useState({
+        decisions: [],
+        assumptions: [],
+        scope: []
+    });
     const scrollRef = useRef(null);
 
     // Send initial AI greeting based on idea
@@ -18,7 +26,7 @@ const ChatWindow = ({ initialIdea, onComplete }) => {
         const startChat = async () => {
             setIsTyping(true);
 
-            const initialPrompt = `Hey! I just read your idea:\n\n"${initialIdea.slice(0, 120)}${initialIdea.length > 120 ? "..." : ""}"\n\nThis is exciting. Let me ask you a few questions to sharpen it. What's the core problem you're solving, and who feels this pain the most?`;
+            const initialPrompt = `Hey! I just read your vision:\n\n"${initialIdea}"\n\nI'm ready to dive in as your co-founder. I've started in **Brainstorm Mode** to explore the possibilities, but feel free to switch to **MVP Planning** or **Risk Analysis** whenever you're ready to get more tactical. What's the main goal you have for this idea right now?`;
 
             setMessages([
                 {
@@ -54,7 +62,8 @@ const ChatWindow = ({ initialIdea, onComplete }) => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    messages: updatedMessages.map(({ role, content }) => ({ role, content }))
+                    messages: updatedMessages.map(({ role, content }) => ({ role, content })),
+                    selectedMode
                 }),
             });
 
@@ -64,13 +73,48 @@ const ChatWindow = ({ initialIdea, onComplete }) => {
 
             const data = await response.json();
 
+            // Check if response contains JSON roadmap
+            let cleanContent = data.content;
+            try {
+                // Try to find JSON block in the response
+                const jsonMatch = data.content.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    const potentialJson = JSON.parse(jsonMatch[0]);
+                    if (potentialJson.roadmap_phases) {
+                        localStorage.setItem('project-roadmap', JSON.stringify(potentialJson));
+                        cleanContent = data.content.replace(jsonMatch[0], "").trim();
+                        if (!cleanContent) cleanContent = "I've generated your strategic roadmap! You can view it by clicking the button in the top right.";
+                        onComplete?.();
+                    }
+                }
+            } catch (e) {
+                console.log("Not a JSON response or failed to parse", e);
+            }
+
             setMessages((prev) => [
                 ...prev,
-                { id: Date.now() + 1, role: "assistant", content: data.content },
+                { id: Date.now() + 1, role: "assistant", content: cleanContent },
             ]);
 
+            // Simple logic to extract "decisions" or "assumptions" based on keywords
+            // In a more advanced version, we would do this via a separate LLM call or regex
+            const content = data.content.toLowerCase();
+            if (content.includes("i've decided") || content.includes("we've agreed")) {
+                const decision = data.content.split(/[.!?]/).find(s =>
+                    s.toLowerCase().includes("decided") || s.toLowerCase().includes("agreed")
+                );
+                if (decision) setMemory(prev => ({ ...prev, decisions: [...new Set([...prev.decisions, decision.trim()])] }));
+            }
+
+            if (content.includes("assuming") || content.includes("assumption")) {
+                const assumption = data.content.split(/[.!?]/).find(s =>
+                    s.toLowerCase().includes("assum")
+                );
+                if (assumption) setMemory(prev => ({ ...prev, assumptions: [...new Set([...prev.assumptions, assumption.trim()])] }));
+            }
+
             // If we've had a few exchanges, we could trigger the completion
-            if (updatedMessages.length >= 6) {
+            if (updatedMessages.length >= 8) {
                 onComplete?.();
             }
         } catch (error) {
@@ -84,14 +128,63 @@ const ChatWindow = ({ initialIdea, onComplete }) => {
         }
     };
 
+    const getThinkingText = () => {
+        switch (selectedMode) {
+            case 'brainstorm': return 'Expanding possibilities...';
+            case 'mvp': return 'Defining lean core...';
+            case 'risk': return 'Challenging assumptions...';
+            case 'roadmap': return 'Structuring phases...';
+            case 'investor': return 'Analyzing business model...';
+            default: return 'Thinking...';
+        }
+    };
+
     return (
-        <div className="flex flex-col h-full bg-background">
+        <div className="flex flex-col h-full bg-background relative">
+            <ProjectMemory
+                memory={memory}
+                isOpen={isMemoryOpen}
+                onClose={() => onToggleMemory(false)}
+            />
+            {/* Mode Switcher Overlay */}
+            <div className="absolute top-4 left-0 right-0 z-20 flex justify-center pointer-events-none px-4">
+                <div className="pointer-events-auto shadow-2xl">
+                    <ModeSwitcher activeMode={selectedMode} onModeChange={setSelectedMode} />
+                </div>
+            </div>
+
             {/* Messages */}
-            <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-1">
+            <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-1 pt-24">
                 {messages.map((msg, i) => (
                     <ChatBubble key={msg.id} content={msg.content} role={msg.role} index={i} />
                 ))}
-                <AnimatePresence>{isTyping && <TypingIndicator />}</AnimatePresence>
+                <AnimatePresence>
+                    {isTyping && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="flex justify-start mb-4"
+                        >
+                            <div className="bg-card border border-border px-5 py-4 rounded-2xl rounded-bl-md shadow-sm">
+                                <span className="block text-xs font-medium text-muted-foreground mb-2">AI Co-Founder</span>
+                                <div className="flex flex-col gap-2">
+                                    <span className="text-xs italic text-primary/70">{getThinkingText()}</span>
+                                    <div className="flex gap-1.5">
+                                        {[0, 1, 2].map((i) => (
+                                            <motion.div
+                                                key={i}
+                                                className="w-2 h-2 rounded-full bg-primary/40"
+                                                animate={{ opacity: [0.3, 1, 0.3] }}
+                                                transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
 
             {/* Input */}

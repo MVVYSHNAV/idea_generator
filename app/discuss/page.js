@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowLeft, Map } from "lucide-react";
+import { ArrowLeft, Map, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ChatWindow from "@/components/ChatWindow";
 import { useState, useEffect } from "react";
@@ -11,6 +11,7 @@ export default function DiscussPage() {
     const router = useRouter();
     const [idea, setIdea] = useState("");
     const [showRoadmapCTA, setShowRoadmapCTA] = useState(false);
+    const [isMemoryOpen, setIsMemoryOpen] = useState(false);
 
     useEffect(() => {
         const savedIdea = localStorage.getItem('user-idea');
@@ -36,26 +37,41 @@ export default function DiscussPage() {
                 <h1 className="font-display font-semibold text-sm sm:text-base">
                     Discussion with AI Co-Founder
                 </h1>
-                {showRoadmapCTA ? (
-                    <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
-                        <Button
-                            onClick={() => router.push("/roadmap")}
-                            size="sm"
-                            className="gradient-bg text-primary-foreground rounded-lg hover:opacity-90 shadow-sm"
-                        >
-                            <Map className="w-4 h-4 mr-1.5" />
-                            View Roadmap
-                        </Button>
-                    </motion.div>
-                ) : (
-                    <div className="w-[130px]" />
-                )}
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setIsMemoryOpen(true)}
+                        className="text-muted-foreground hover:text-primary transition-colors"
+                    >
+                        <Brain className="w-5 h-5" />
+                    </Button>
+                    {showRoadmapCTA ? (
+                        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
+                            <Button
+                                onClick={() => router.push("/roadmap")}
+                                size="sm"
+                                className="gradient-bg text-primary-foreground rounded-lg hover:opacity-90 shadow-sm"
+                            >
+                                <Map className="w-4 h-4 mr-1.5" />
+                                View Roadmap
+                            </Button>
+                        </motion.div>
+                    ) : (
+                        <div className="w-[100px]" />
+                    )}
+                </div>
             </header>
 
             {/* Chat */}
             <div className="flex-1 overflow-hidden">
                 {idea && (
-                    <ChatWindow initialIdea={idea} onComplete={() => setShowRoadmapCTA(true)} />
+                    <ChatWindow
+                        initialIdea={idea}
+                        onComplete={() => setShowRoadmapCTA(true)}
+                        isMemoryOpen={isMemoryOpen}
+                        onToggleMemory={setIsMemoryOpen}
+                    />
                 )}
             </div>
         </div>
