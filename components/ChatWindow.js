@@ -8,22 +8,25 @@ import ChatBubble from "./ChatBubble";
 import ModeSwitcher from "./ModeSwitcher";
 import ProjectMemory from "./ProjectMemory";
 import TypingIndicator from "./TypingIndicator";
+import { saveProjectState } from "@/lib/storage";
 
-const ChatWindow = ({ initialIdea, onComplete, isMemoryOpen, onToggleMemory }) => {
-    const [messages, setMessages] = useState([]);
+const ChatWindow = ({ initialIdea, onComplete, isMemoryOpen, onToggleMemory, initialState }) => {
+    const [messages, setMessages] = useState(initialState?.chatMessages || []);
     const [input, setInput] = useState("");
     const [isTyping, setIsTyping] = useState(false);
-    const [selectedMode, setSelectedMode] = useState('brainstorm');
-    const [memory, setMemory] = useState({
+    const [selectedMode, setSelectedMode] = useState(initialState?.activeMode || 'brainstorm');
+    const [memory, setMemory] = useState(initialState?.projectMemory || {
         decisions: [],
         assumptions: [],
         scope: []
     });
     const scrollRef = useRef(null);
 
-    // Send initial AI greeting based on idea
+    // Send initial AI greeting IF no messages exist
     useEffect(() => {
         const startChat = async () => {
+            if (messages.length > 0) return; // Don't greet if restoring session
+
             setIsTyping(true);
 
             const initialPrompt = `Hey! I just read your vision:\n\n"${initialIdea}"\n\nI'm ready to dive in as your co-founder. I've started in **Brainstorm Mode** to explore the possibilities, but feel free to switch to **MVP Planning** or **Risk Analysis** whenever you're ready to get more tactical. What's the main goal you have for this idea right now?`;
@@ -38,10 +41,23 @@ const ChatWindow = ({ initialIdea, onComplete, isMemoryOpen, onToggleMemory }) =
             setIsTyping(false);
         };
 
-        if (initialIdea) {
+        if (initialIdea && messages.length === 0) {
             startChat();
         }
     }, [initialIdea]);
+
+    // Auto-save logic
+    useEffect(() => {
+        if (messages.length > 0) {
+            saveProjectState({
+                idea: initialIdea,
+                chatMessages: messages,
+                activeMode: selectedMode,
+                projectMemory: memory,
+                structuredRoadmap: JSON.parse(localStorage.getItem('project-roadmap') || 'null')
+            });
+        }
+    }, [messages, selectedMode, memory, initialIdea]);
 
     useEffect(() => {
         scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
