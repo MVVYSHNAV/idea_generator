@@ -43,8 +43,8 @@ export default function ProjectMemory({ memory, isOpen, onClose }) {
                                     Decisions Made
                                 </div>
                                 <ul className="space-y-3">
-                                    {memory.decisions.length > 0 ? (
-                                        memory.decisions.map((item, i) => (
+                                    {(memory?.decisions || []).length > 0 ? (
+                                        (memory?.decisions || []).map((item, i) => (
                                             <motion.li
                                                 initial={{ opacity: 0, x: 10 }}
                                                 animate={{ opacity: 1, x: 0 }}
@@ -67,8 +67,8 @@ export default function ProjectMemory({ memory, isOpen, onClose }) {
                                     Key Assumptions
                                 </div>
                                 <ul className="space-y-3">
-                                    {memory.assumptions.length > 0 ? (
-                                        memory.assumptions.map((item, i) => (
+                                    {(memory?.assumptions || []).length > 0 ? (
+                                        (memory?.assumptions || []).map((item, i) => (
                                             <motion.li
                                                 initial={{ opacity: 0, x: 10 }}
                                                 animate={{ opacity: 1, x: 0 }}
@@ -91,8 +91,8 @@ export default function ProjectMemory({ memory, isOpen, onClose }) {
                                     Scope Boundaries
                                 </div>
                                 <ul className="space-y-3">
-                                    {memory.scope.length > 0 ? (
-                                        memory.scope.map((item, i) => (
+                                    {(memory?.scope || []).length > 0 ? (
+                                        (memory?.scope || []).map((item, i) => (
                                             <motion.li
                                                 initial={{ opacity: 0, x: 10 }}
                                                 animate={{ opacity: 1, x: 0 }}

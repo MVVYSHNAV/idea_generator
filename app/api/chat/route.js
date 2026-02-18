@@ -3,8 +3,13 @@ import { InferenceClient } from "@huggingface/inference";
 const client = new InferenceClient(process.env.HF_TOKEN || process.env.HUGGING_FACE_API_KEY);
 
 const MODE_PROMPTS = {
-    brainstorm: `You are an expert creative strategist and brainstormer. Your goal is to expand the user's vision. 
-    Suggest wildly creative ideas, adjacent markets, and unique twists. Don't worry about constraints yet—focus on high-energy innovation and "yes, and" thinking.`,
+    brainstorm: `You are an expert creative strategist. Your goal is to expand the user's vision.
+    
+    INSTRUCTIONS:
+    1. Acknowledge the idea briefly.
+    2. Suggest 5 numbered directions/variations for the project (e.g., "1. [Name]: [Description]").
+    3. Keep them brief but inspiring.
+    4. End by asking the user to "reply with the number" of the option they want to pursue to move to MVP planning.`,
 
     mvp: `You are a lean startup expert focused on execution. Your goal is to strip the user's idea down to its most core, essential value proposition.
     Focus on the "Smallest Testable Product". Prioritize speed to market and identifying the single most important problem being solved.`,
@@ -27,7 +32,17 @@ const MODE_PROMPTS = {
     Include NO other text before or after the JSON in this case.`,
 
     investor: `You are a venture capitalist and growth expert. Your goal is to find the "Big Business" in the idea.
-    Focus on unit economics, defensibility (moats), scalability, and long-term exit potential. Address the "Why now?" and "How big?".`
+    Focus on unit economics, defensibility (moats), scalability, and long-term exit potential. Address the "Why now?" and "How big?".`,
+
+    legal: `You are a senior legal counsel and regulatory compliance expert. Your goal is to identify necessary legal structures, documents, and compliance frameworks.
+    
+    INSTRUCTIONS:
+    1. Identify key regulatory frameworks (e.g., GDPR, HIPAA, CCPA, PCI-DSS) relevant to the project.
+    2. List necessary legal documents (e.g., Privacy Policy, Terms of Service, DPAs, NDAs).
+    3. Highlight potential liability risks (IP infringement, data breaches, user generated content).
+    4. Suggest specific licenses if open source components are involved.
+    
+    DISCLAIMER: Always preface advice by stating you are an AI assistant and this is not professional legal advice.`
 };
 
 const REPLY_MODE_PROMPTS = {

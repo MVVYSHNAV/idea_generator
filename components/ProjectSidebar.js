@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import { Plus, Trash2, MessageSquare, Menu, X, ChevronRight, Folder } from "lucide-react";
+import { Plus, Trash2, MessageSquare, Menu, X, ChevronRight, Folder, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import {
@@ -20,6 +20,7 @@ export default function ProjectSidebar({ className }) {
     const [activeProject, setActiveProjectState] = useState(null);
     const [isOpen, setIsOpen] = useState(true);
     const [isMobileOpen, setIsMobileOpen] = useState(false);
+    const [deleteId, setDeleteId] = useState(null);
 
     // Load projects on mount and when interactions happen
     const refreshProjects = () => {
@@ -67,10 +68,10 @@ export default function ProjectSidebar({ className }) {
 
     const handleDelete = (e, id) => {
         e.stopPropagation();
-        if (confirm("Are you sure you want to delete this project?")) {
-            deleteProject(id);
-            refreshProjects();
-            // If active was deleted, refresh calculation handles it
+        if (deleteId === id) {
+            setDeleteId(null); // Cancel deletion state
+        } else {
+            setDeleteId(id); // Initiate deletion state
         }
     };
 
@@ -157,14 +158,40 @@ export default function ProjectSidebar({ className }) {
                                         <p className="text-xs opacity-70 truncate">{new Date(project.updatedAt).toLocaleDateString()}</p>
                                     </div>
 
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/10 hover:text-destructive"
-                                        onClick={(e) => handleDelete(e, project.id)}
-                                    >
-                                        <Trash2 className="w-3 h-3" />
-                                    </Button>
+                                    {deleteId === project.id ? (
+                                        <div className="flex items-center gap-1">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-6 w-6 text-destructive hover:bg-destructive/10"
+                                                onClick={(e) => handleDelete(e, project.id)}
+                                            >
+                                                <X className="w-3 h-3" />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-6 w-6 text-green-500 hover:bg-green-500/10"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    deleteProject(project.id);
+                                                    refreshProjects();
+                                                    setDeleteId(null);
+                                                }}
+                                            >
+                                                <CheckCircle2 className="w-3 h-3" />
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/10 hover:text-destructive"
+                                            onClick={(e) => handleDelete(e, project.id)}
+                                        >
+                                            <Trash2 className="w-3 h-3" />
+                                        </Button>
+                                    )}
                                 </>
                             )}
                         </div>

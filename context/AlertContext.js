@@ -19,7 +19,7 @@ export const AlertProvider = ({ children }) => {
     const [alerts, setAlerts] = useState([]);
 
     const showAlert = useCallback(({ title, message, type = 'info', duration = 4000, action }) => {
-        const id = Date.now();
+        const id = Date.now() + Math.random();
         setAlerts((prev) => [...prev, { id, title, message, type, action }]);
 
         if (duration !== Infinity) {

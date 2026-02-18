@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from "framer-motion";
-import { Lightbulb, Rocket, AlertTriangle, Map, TrendingUp } from "lucide-react";
+import { Lightbulb, Rocket, AlertTriangle, Map, TrendingUp, Scale } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const modes = [
@@ -44,6 +44,14 @@ const modes = [
         color: 'text-purple-500',
         bgColor: 'bg-purple-500/10',
         description: 'Business model & growth loops'
+    },
+    {
+        id: 'legal',
+        name: 'Legal Strategy',
+        icon: Scale,
+        color: 'text-slate-500',
+        bgColor: 'bg-slate-500/10',
+        description: 'Compliance, risks & required docs'
     }
 ];
 

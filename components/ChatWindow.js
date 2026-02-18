@@ -18,36 +18,14 @@ const ChatWindow = ({ initialIdea, onComplete, isMemoryOpen, onToggleMemory, ini
     const [input, setInput] = useState("");
     const [isTyping, setIsTyping] = useState(false);
     const [selectedMode, setSelectedMode] = useState(initialState?.activeMode || 'brainstorm');
-    const [memory, setMemory] = useState(initialState?.projectMemory || {
+    const [memory, setMemory] = useState({
         decisions: [],
         assumptions: [],
-        scope: []
+        scope: [],
+        ...(initialState?.projectMemory || {})
     });
     const scrollRef = useRef(null);
 
-    // Send initial AI greeting IF no messages exist
-    useEffect(() => {
-        const startChat = async () => {
-            if (messages.length > 0) return; // Don't greet if restoring session
-
-            setIsTyping(true);
-
-            const initialPrompt = `Hey! I just read your vision:\n\n"${initialIdea}"\n\nI'm ready to dive in as your co-founder. I've started in **Brainstorm Mode** to explore the possibilities, but feel free to switch to **MVP Planning** or **Risk Analysis** whenever you're ready to get more tactical. What's the main goal you have for this idea right now?`;
-
-            setMessages([
-                {
-                    id: Date.now(),
-                    role: "assistant",
-                    content: initialPrompt,
-                },
-            ]);
-            setIsTyping(false);
-        };
-
-        if (initialIdea && messages.length === 0) {
-            startChat();
-        }
-    }, [initialIdea]);
 
     // Auto-save logic
     useEffect(() => {
@@ -77,37 +55,26 @@ const ChatWindow = ({ initialIdea, onComplete, isMemoryOpen, onToggleMemory, ini
         return () => clearTimeout(timeoutId);
     }, [messages, isTyping]);
 
-    const handleSend = async () => {
-        if (!input.trim() || isTyping) return;
-
-        const userMsg = { id: Date.now(), role: "user", content: input.trim() };
-        const updatedMessages = [...messages, userMsg];
-        setMessages(updatedMessages);
-        setInput("");
-        setIsTyping(true);
-
+    // Unified API handler
+    const processAIResponse = async (currentMessages, mode) => {
         try {
-            // Send to our Next.js API route
             const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    messages: updatedMessages.map(({ role, content }) => ({ role, content })),
-                    selectedMode,
+                    messages: currentMessages.map(({ role, content }) => ({ role, content })),
+                    selectedMode: mode,
                     replyMode
                 }),
             });
 
-            if (!response.ok) {
-                throw new Error('Failed to get response from AI');
-            }
+            if (!response.ok) throw new Error('Failed to get response from AI');
 
             const data = await response.json();
-
-            // Check if response contains JSON roadmap
             let cleanContent = data.content;
+
+            // Check for JSON roadmap
             try {
-                // Try to find JSON block in the response
                 const jsonMatch = data.content.match(/\{[\s\S]*\}/);
                 if (jsonMatch) {
                     const potentialJson = JSON.parse(jsonMatch[0]);
@@ -121,7 +88,7 @@ const ChatWindow = ({ initialIdea, onComplete, isMemoryOpen, onToggleMemory, ini
                     }
                 }
             } catch (e) {
-                console.log("Not a JSON response or failed to parse", e);
+                console.log("JSON parsing error", e);
             }
 
             setMessages((prev) => [
@@ -129,8 +96,7 @@ const ChatWindow = ({ initialIdea, onComplete, isMemoryOpen, onToggleMemory, ini
                 { id: Date.now() + 1, role: "assistant", content: cleanContent },
             ]);
 
-            // Simple logic to extract "decisions" or "assumptions" based on keywords
-            // In a more advanced version, we would do this via a separate LLM call or regex
+            // Memory extraction logic
             const content = data.content.toLowerCase();
             if (content.includes("i've decided") || content.includes("we've agreed")) {
                 const decision = data.content.split(/[.!?]/).find(s =>
@@ -141,24 +107,19 @@ const ChatWindow = ({ initialIdea, onComplete, isMemoryOpen, onToggleMemory, ini
                     showInfo("Decision Tracked", "Added to project memory.");
                 }
             }
-
             if (content.includes("assuming") || content.includes("assumption")) {
-                const assumption = data.content.split(/[.!?]/).find(s =>
-                    s.toLowerCase().includes("assum")
-                );
+                const assumption = data.content.split(/[.!?]/).find(s => s.toLowerCase().includes("assum"));
                 if (assumption) {
                     setMemory(prev => ({ ...prev, assumptions: [...new Set([...prev.assumptions, assumption.trim()])] }));
                     showInfo("Assumption Noted", "Stored for risk analysis.");
                 }
             }
 
-            // If we've had a few exchanges, we could trigger the completion
-            if (updatedMessages.length >= 8) {
-                onComplete?.();
-            }
+            if (currentMessages.length >= 8) onComplete?.();
+
         } catch (error) {
             console.error('Chat error:', error);
-            showError("AI Signal Lost", replyMode === 'tech' ? "Endpoint connection failed. Check your API token." : "Sorry, I lost my connection. Please check your internet or try again.");
+            showError("AI Signal Lost", replyMode === 'tech' ? "Endpoint connection failed. Check your API token." : "Connection lost. Please try again.");
             setMessages((prev) => [
                 ...prev,
                 { id: Date.now() + 1, role: "assistant", content: "Sorry, I ran into an issue connecting to my brain. Please check your connection or try again." },
@@ -168,6 +129,59 @@ const ChatWindow = ({ initialIdea, onComplete, isMemoryOpen, onToggleMemory, ini
         }
     };
 
+
+    // Initial Brainstorm Trigger
+    // Initial Brainstorm Trigger
+    const hasInitialized = useRef(false);
+
+    useEffect(() => {
+        const startChat = async () => {
+            if (messages.length > 0 || hasInitialized.current) return;
+
+            hasInitialized.current = true;
+            setIsTyping(true);
+
+            // 1. Add static greeting
+            const initialPrompt = `Hey! I just read your vision:\n\n"${initialIdea}"\n\nI'm ready to dive in as your co-founder. I've started in **Brainstorm Mode** to explore the possibilities.`;
+
+            const greetingMsg = {
+                id: Date.now(),
+                role: "assistant",
+                content: initialPrompt,
+            };
+
+            setMessages([greetingMsg]);
+
+            // 2. Trigger API for Brainstorm Options (using idea as context)
+            await processAIResponse([{ role: "user", content: initialIdea }], selectedMode);
+        };
+
+        if (initialIdea && messages.length === 0) {
+            startChat();
+        }
+    }, [initialIdea]); // Removed messages dependency to avoid re-triggering, relied on ref
+
+    // Handle User Send
+    const handleSend = async () => {
+        if (!input.trim() || isTyping) return;
+
+        // Check for Brainstorm Selection (Number 1-9)
+        let currentMode = selectedMode;
+        if (selectedMode === 'brainstorm' && /^[1-9]$/.test(input.trim())) {
+            currentMode = 'mvp';
+            setSelectedMode('mvp');
+            showInfo("Pivoting to MVP", "Focusing on your selected option.");
+        }
+
+        const userMsg = { id: Date.now(), role: "user", content: input.trim() };
+        const updatedMessages = [...messages, userMsg];
+        setMessages(updatedMessages);
+        setInput("");
+        setIsTyping(true);
+
+        await processAIResponse(updatedMessages, currentMode);
+    };
+
     const getThinkingText = () => {
         switch (selectedMode) {
             case 'brainstorm': return 'Expanding possibilities...';
@@ -175,6 +189,7 @@ const ChatWindow = ({ initialIdea, onComplete, isMemoryOpen, onToggleMemory, ini
             case 'risk': return 'Challenging assumptions...';
             case 'roadmap': return 'Structuring phases...';
             case 'investor': return 'Analyzing business model...';
+            case 'legal': return 'Reviewing compliance frameworks...';
             default: return 'Thinking...';
         }
     };
