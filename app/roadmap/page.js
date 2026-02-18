@@ -6,12 +6,17 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Download, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import VisualRoadmap from "@/components/VisualRoadmap";
+import DevGuideDisplay from "@/components/DevGuideDisplay";
+import TechStackModal from "@/components/TechStackModal";
 import { useAlert } from "@/context/AlertContext";
 
 export default function RoadmapPage() {
     const router = useRouter();
-    const { showSuccess } = useAlert();
+    const { showSuccess, showError } = useAlert();
     const [roadmapData, setRoadmapData] = useState(null);
+    const [devGuide, setDevGuide] = useState(null);
+    const [isGeneratingGuide, setIsGeneratingGuide] = useState(false);
+    const [isStackModalOpen, setIsStackModalOpen] = useState(false);
 
     useEffect(() => {
         const savedData = localStorage.getItem('project-roadmap');
@@ -50,6 +55,52 @@ export default function RoadmapPage() {
         showSuccess("Roadmap Exported", "Your strategic plan is ready in your downloads.");
     };
 
+    const handleGenerateClick = () => {
+        setIsStackModalOpen(true);
+    };
+
+    const handleConfirmGenerate = async ({ frontend, backend }) => {
+        setIsStackModalOpen(false);
+        setIsGeneratingGuide(true);
+        try {
+            const projectState = localStorage.getItem('idea_navigator_project')
+                ? JSON.parse(localStorage.getItem('idea_navigator_project'))
+                : null;
+
+            const response = await fetch('/api/dev-guide', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    idea: projectState?.idea || roadmapData.problem_statement,
+                    memory: projectState?.projectMemory || {},
+                    roadmap: roadmapData,
+                    summary: projectState?.summary || "",
+                    language: "JavaScript/TypeScript", // General default, specific stack passed below
+                    framework: frontend, // User selected value
+                    backend_tech: backend, // User selected value - we'll need to update API to use this
+                    replyLevel: projectState?.replyMode || "tech"
+                }),
+            });
+
+            if (!response.ok) throw new Error('Failed to generate guide');
+
+            const data = await response.json();
+            setDevGuide(data.guide);
+            showSuccess("Blueprint Ready", `Development guide for ${frontend} + ${backend} generated.`);
+
+            // Scroll to guide
+            setTimeout(() => {
+                document.getElementById('dev-guide-section')?.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+
+        } catch (error) {
+            console.error(error);
+            showError("Generation Failed", "Could not create the development guide. Please try again.");
+        } finally {
+            setIsGeneratingGuide(false);
+        }
+    };
+
     if (!roadmapData) return null;
 
     return (
@@ -83,8 +134,49 @@ export default function RoadmapPage() {
                 </div>
             </header>
 
-            <main className="pt-24 pb-20">
+            <main className="pt-24 pb-20 max-w-7xl mx-auto px-4 space-y-12">
                 <VisualRoadmap data={roadmapData} />
+
+                {/* Dev Guide Section */}
+                <section id="dev-guide-section" className="border-t border-border pt-12">
+                    <div className="flex flex-col items-center justify-center mb-8 text-center">
+                        <h2 className="text-2xl font-bold font-display mb-2">Ready to Build?</h2>
+                        <p className="text-muted-foreground mb-6 max-w-lg">
+                            Turn this roadmap into a concrete engineering plan.
+                            Get a step-by-step guide tailored to your tech stack.
+                        </p>
+
+                        {!devGuide && (
+                            <Button
+                                onClick={handleGenerateClick}
+                                disabled={isGeneratingGuide}
+                                size="lg"
+                                className="gradient-bg text-primary-foreground shadow-glow"
+                            >
+                                {isGeneratingGuide ? (
+                                    <>Processing...</>
+                                ) : (
+                                    <>Generate Development Plan</>
+                                )}
+                            </Button>
+                        )}
+                    </div>
+
+                    {devGuide && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                        >
+                            <DevGuideDisplay guide={devGuide} onClose={() => setDevGuide(null)} />
+                        </motion.div>
+                    )}
+                </section>
+
+                <TechStackModal
+                    isOpen={isStackModalOpen}
+                    onClose={() => setIsStackModalOpen(false)}
+                    onConfirm={handleConfirmGenerate}
+                />
             </main>
 
             {/* Footer / Disclaimer */}
