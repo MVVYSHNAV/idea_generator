@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "cofounder | profzer AI",
   description: "Accelerate your startup journey with profzer AI — your strategic 24/7 co-founder.",
+  icons: {
+    icon: "/logo.png",
+  },
 };
 
 export default function RootLayout({ children }) {
