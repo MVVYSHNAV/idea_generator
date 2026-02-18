@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Idea Navigator | profzer AI",
+  title: "cofounder | profzer AI",
   description: "Accelerate your startup journey with profzer AI — your strategic 24/7 co-founder.",
 };
 
