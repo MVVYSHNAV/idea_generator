@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Sparkles, MessageCircle, Map } from "lucide-react";
+import { ArrowRight, Sparkles, MessageCircle, Map, Code } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Logo from "./Logo";
 
@@ -61,7 +61,7 @@ const HeroSection = () => {
                     className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed"
                 >
                     Chat with profzer AI. Brainstorm freely, refine ideas together,
-                    and get a structured project plan — all in minutes.
+                    and get a structured project plan with a bespoke technical guide — all in minutes.
                 </motion.p>
 
                 {/* CTA */}
@@ -101,7 +101,8 @@ const HeroSection = () => {
                     {[
                         { icon: Sparkles, title: "Capture Ideas", desc: "Dump your raw thoughts freely" },
                         { icon: MessageCircle, title: "Discuss & Refine", desc: "Chat with profzer AI" },
-                        { icon: Map, title: "Get Roadmap", desc: "Structured plan, ready to execute" },
+                        { icon: Map, title: "Get Roadmap", desc: "Phased plan with timelines" },
+                        { icon: Code, title: "Dev Guide", desc: "Tech stack & step-by-step instructions" },
                     ].map((step, i) => (
                         <motion.div
                             key={step.title}

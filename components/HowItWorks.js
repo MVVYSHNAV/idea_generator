@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from "framer-motion";
-import { Lightbulb, MessageSquare, BarChart3, Zap } from "lucide-react";
+import { Lightbulb, MessageSquare, BarChart3, Code2 } from "lucide-react";
 
 const features = [
     {
@@ -20,9 +20,9 @@ const features = [
         description: "Your conversation transforms into a clear, phased roadmap with features, risks, and timelines.",
     },
     {
-        icon: Zap,
-        title: "API-Ready",
-        description: "Built to scale. Plug in your own AI model, export to your tools, and ship faster.",
+        icon: Code2,
+        title: "Bespoke Dev Guide",
+        description: "Select your tech stack (e.g., Next.js, Django, Frappe) and get a tailored implementation guide.",
     },
 ];
 
@@ -37,7 +37,7 @@ const HowItWorks = () => {
                     className="text-center mb-16"
                 >
                     <h2 className="text-3xl sm:text-4xl font-bold font-display mb-4">
-                        From chaos to clarity in <span className="gradient-text">3 steps</span>
+                        From chaos to code in <span className="gradient-text">4 steps</span>
                     </h2>
                     <p className="text-muted-foreground text-lg max-w-xl mx-auto">
                         No templates. No rigid frameworks. Just a natural flow from idea to action.
