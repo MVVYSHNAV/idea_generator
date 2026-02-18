@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import MobileSidebarTrigger from "@/components/MobileSidebarTrigger";
 import { cn } from "@/lib/utils";
 import { createNewProject } from "@/lib/project-storage";
+import OnboardingTour from "@/components/OnboardingTour";
 
 export default function IdeaPage() {
     const [idea, setIdea] = useState("");
@@ -36,8 +37,11 @@ export default function IdeaPage() {
     return (
         <div className="min-h-screen bg-background flex flex-col">
             {/* Header */}
-            <header className="sticky top-0 z-50 p-4 sm:p-6 bg-background/50 backdrop-blur-md border-b border-border/10 flex items-center">
-                <MobileSidebarTrigger />
+            <header className="sticky top-0 z-50 p-4 sm:p-6 bg-background/50 backdrop-blur-md border-b border-border/10 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                    <MobileSidebarTrigger />
+                    <OnboardingTour tourId="idea" />
+                </div>
                 <Button
                     variant="ghost"
                     onClick={() => router.push("/")}
@@ -86,9 +90,10 @@ export default function IdeaPage() {
                             placeholder="e.g. I want to build an app that helps freelancers track their time and automatically generate invoices. Maybe it could integrate with Stripe for payments and have a dashboard showing monthly earnings..."
                             className="w-full h-48 sm:h-56 rounded-2xl border border-border bg-card p-5 text-foreground text-base leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-ring transition-shadow placeholder:text-muted-foreground/60 shadow-soft"
                             autoFocus
+                            id="onboarding-idea-input"
                         />
 
-                        <div className="mt-8 mb-8">
+                        <div className="mt-8 mb-8" id="onboarding-reply-mode">
                             <label className="text-sm font-medium text-muted-foreground mb-4 block">
                                 How should I talk to you?
                             </label>
@@ -160,6 +165,7 @@ export default function IdeaPage() {
                                 disabled={!idea.trim() || isLoading}
                                 size="lg"
                                 className="gradient-bg text-primary-foreground rounded-xl px-8 hover:opacity-90 transition-opacity shadow-glow w-full sm:w-auto"
+                                id="onboarding-continue-btn"
                             >
                                 {isLoading ? (
                                     <>

@@ -55,9 +55,9 @@ const modes = [
     }
 ];
 
-export default function ModeSwitcher({ activeMode, onModeChange }) {
+export default function ModeSwitcher({ activeMode, onModeChange, id }) {
     return (
-        <div className="flex sm:flex-wrap gap-2 p-2 bg-card/50 backdrop-blur-md border border-border rounded-2xl overflow-x-auto no-scrollbar max-w-full scroll-smooth">
+        <div id={id} className="flex sm:flex-wrap gap-2 p-2 bg-card/50 backdrop-blur-md border border-border rounded-2xl overflow-x-auto no-scrollbar max-w-full scroll-smooth">
             {modes.map((mode) => {
                 const Icon = mode.icon;
                 const isActive = activeMode === mode.id;

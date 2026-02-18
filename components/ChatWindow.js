@@ -204,7 +204,7 @@ const ChatWindow = ({ initialIdea, onComplete, isMemoryOpen, onToggleMemory, ini
             {/* Mode Swer & Reply Level Overlay */}
             <div className="absolute top-4 left-0 right-0 z-20 flex flex-col items-center gap-2 pointer-events-none px-4">
                 <div className="pointer-events-auto shadow-2xl max-w-[calc(100vw-2rem)] rounded-2xl">
-                    <ModeSwitcher activeMode={selectedMode} onModeChange={setSelectedMode} />
+                    <ModeSwitcher activeMode={selectedMode} onModeChange={setSelectedMode} id="onboarding-mode-switcher" />
                 </div>
                 <div className="pointer-events-auto shadow-lg lg:hidden bg-card/50 backdrop-blur-md rounded-xl p-0.5 border border-border/20">
                     <ReplyLevelToggle mode={replyMode} onChange={onModeChange} />
@@ -265,6 +265,7 @@ const ChatWindow = ({ initialIdea, onComplete, isMemoryOpen, onToggleMemory, ini
                         placeholder="Type your thoughts..."
                         className="flex-1 rounded-xl border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-shadow"
                         disabled={isTyping}
+                        id="onboarding-chat-input"
                     />
                     <Button
                         type="submit"

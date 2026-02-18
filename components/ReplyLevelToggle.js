@@ -4,9 +4,9 @@ import { motion } from "framer-motion";
 import { User, Code, Sparkles, Code2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export default function ReplyLevelToggle({ mode, onChange }) {
+export default function ReplyLevelToggle({ mode, onChange, id }) {
     return (
-        <div className="flex bg-muted p-1 rounded-xl border border-border/50 shadow-inner relative overflow-hidden h-9 items-center">
+        <div id={id} className="flex bg-muted p-1 rounded-xl border border-border/50 shadow-inner relative overflow-hidden h-9 items-center">
             <motion.div
                 animate={{
                     x: mode === 'non-tech' ? 0 : '100%'

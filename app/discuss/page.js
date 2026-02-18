@@ -12,6 +12,7 @@ import { useState, useEffect } from "react";
 import { getProjectState, clearProjectState, saveProjectState } from "@/lib/storage";
 import { useAlert } from "@/context/AlertContext";
 import MobileSidebarTrigger from "@/components/MobileSidebarTrigger";
+import OnboardingTour from "@/components/OnboardingTour";
 
 export default function DiscussPage() {
     const router = useRouter();
@@ -113,13 +114,14 @@ export default function DiscussPage() {
                         size="sm"
                         onClick={() => router.push("/idea")}
                         className="text-muted-foreground px-2 sm:px-3"
+                        id="onboarding-back-btn"
                     >
                         <ArrowLeft className="w-4 h-4 sm:mr-2" />
                         <span className="hidden sm:inline">Back</span>
                     </Button>
                 </div>
 
-                <div className="hidden lg:flex items-center">
+                <div className="hidden lg:flex items-center" id="onboarding-reply-toggle">
                     <ReplyLevelToggle mode={replyMode} onChange={handleModeChange} />
                 </div>
 
@@ -129,11 +131,13 @@ export default function DiscussPage() {
                 </h1>
 
                 <div className="flex items-center gap-1 sm:gap-2">
+                    <OnboardingTour tourId="discuss" />
                     <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => setIsMemoryOpen(true)}
                         className="text-muted-foreground hover:text-primary transition-colors h-8 w-8 sm:h-10 sm:w-10"
+                        id="onboarding-memory-btn"
                     >
                         <Brain className="w-4 h-4 sm:w-5 sm:h-5" />
                     </Button>
