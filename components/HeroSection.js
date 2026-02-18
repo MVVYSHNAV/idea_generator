@@ -27,15 +27,22 @@ const HeroSection = () => {
                 />
             </div>
 
-            <div className="relative z-10 max-w-4xl mx-auto text-center">
-                {/* Logo & Badge */}
+            {/* Header / Nav */}
+            <nav className="absolute top-0 left-0 right-0 p-8 sm:p-12 flex items-center justify-between z-20">
+                <Logo size="md" />
+                <div className="hidden sm:flex gap-4">
+                    {/* Placeholder for future nav items if needed */}
+                </div>
+            </nav>
+
+            <div className="relative z-10 max-w-4xl mx-auto text-center mt-32 sm:mt-32">
+                {/* Badge */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="flex flex-col items-center gap-6 mb-12"
+                    className="flex flex-col items-center gap-6 mb-8"
                 >
-                    <Logo size="lg" />
                     <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/50 backdrop-blur-sm text-secondary-foreground text-sm font-medium border border-border/10">
                         <Sparkles className="w-4 h-4 text-accent" />
                         AI-Powered Project Planning

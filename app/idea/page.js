@@ -3,21 +3,31 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowRight, ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowRight, ArrowLeft, Loader2, Sparkles, Code2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import MobileSidebarTrigger from "@/components/MobileSidebarTrigger";
+import { cn } from "@/lib/utils";
+import { createNewProject } from "@/lib/project-storage";
 
 export default function IdeaPage() {
     const [idea, setIdea] = useState("");
+    const [replyMode, setReplyMode] = useState("non-tech");
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
 
     const handleContinue = () => {
         if (!idea.trim()) return;
         setIsLoading(true);
-        // Use localStorage to pass the idea since Next.js app router 
-        // doesn't have a direct equivalent to react-router-dom state in navigation easily
-        localStorage.setItem('user-idea', idea.trim());
 
+        // Create the new project immediately
+        // This sets it as active in storage
+        createNewProject(idea.trim(), replyMode);
+
+        // Clear legacy temp storage just in case
+        localStorage.removeItem('user-idea');
+        localStorage.removeItem('user-reply-mode');
+
+        // Small delay for UX feel
         setTimeout(() => {
             router.push("/discuss");
         }, 800);
@@ -26,7 +36,8 @@ export default function IdeaPage() {
     return (
         <div className="min-h-screen bg-background flex flex-col">
             {/* Header */}
-            <header className="sticky top-0 z-50 p-4 sm:p-6 bg-background/50 backdrop-blur-md border-b border-border/10">
+            <header className="sticky top-0 z-50 p-4 sm:p-6 bg-background/50 backdrop-blur-md border-b border-border/10 flex items-center">
+                <MobileSidebarTrigger />
                 <Button
                     variant="ghost"
                     onClick={() => router.push("/")}
@@ -77,15 +88,78 @@ export default function IdeaPage() {
                             autoFocus
                         />
 
-                        <div className="flex items-center justify-between mt-6">
-                            <span className="text-sm text-muted-foreground">
-                                {idea.length > 0 ? `${idea.length} characters` : ""}
+                        <div className="mt-8 mb-8">
+                            <label className="text-sm font-medium text-muted-foreground mb-4 block">
+                                How should I talk to you?
+                            </label>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <button
+                                    onClick={() => setReplyMode('non-tech')}
+                                    className={cn(
+                                        "relative group flex items-start gap-4 p-4 rounded-xl border text-left transition-all duration-200",
+                                        replyMode === 'non-tech'
+                                            ? "border-primary bg-primary/5 ring-1 ring-primary/20 shadow-sm"
+                                            : "border-border bg-card hover:border-primary/50 hover:bg-muted/50"
+                                    )}
+                                >
+                                    <div className={cn(
+                                        "p-2.5 rounded-lg shrink-0 transition-colors",
+                                        replyMode === 'non-tech' ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground group-hover:text-primary"
+                                    )}>
+                                        <Sparkles className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <div className="font-semibold text-foreground mb-1">Visionary</div>
+                                        <p className="text-xs text-muted-foreground leading-relaxed">
+                                            Focus on the business, features, and user experience. Handle the tech details for me.
+                                        </p>
+                                    </div>
+                                    {replyMode === 'non-tech' && (
+                                        <div className="absolute top-4 right-4 text-primary">
+                                            <CheckCircle2 className="w-5 h-5" />
+                                        </div>
+                                    )}
+                                </button>
+
+                                <button
+                                    onClick={() => setReplyMode('tech')}
+                                    className={cn(
+                                        "relative group flex items-start gap-4 p-4 rounded-xl border text-left transition-all duration-200",
+                                        replyMode === 'tech'
+                                            ? "border-primary bg-primary/5 ring-1 ring-primary/20 shadow-sm"
+                                            : "border-border bg-card hover:border-primary/50 hover:bg-muted/50"
+                                    )}
+                                >
+                                    <div className={cn(
+                                        "p-2.5 rounded-lg shrink-0 transition-colors",
+                                        replyMode === 'tech' ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground group-hover:text-primary"
+                                    )}>
+                                        <Code2 className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <div className="font-semibold text-foreground mb-1">Technical</div>
+                                        <p className="text-xs text-muted-foreground leading-relaxed">
+                                            Let's talk checks, stacks, and architecture. I want to build it myself.
+                                        </p>
+                                    </div>
+                                    {replyMode === 'tech' && (
+                                        <div className="absolute top-4 right-4 text-primary">
+                                            <CheckCircle2 className="w-5 h-5" />
+                                        </div>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <span className="text-sm text-muted-foreground hidden sm:block">
+                                {idea.length > 0 ? `${idea.length} chars` : ""}
                             </span>
                             <Button
                                 onClick={handleContinue}
                                 disabled={!idea.trim() || isLoading}
                                 size="lg"
-                                className="gradient-bg text-primary-foreground rounded-xl px-8 hover:opacity-90 transition-opacity shadow-glow"
+                                className="gradient-bg text-primary-foreground rounded-xl px-8 hover:opacity-90 transition-opacity shadow-glow w-full sm:w-auto"
                             >
                                 {isLoading ? (
                                     <>

@@ -11,6 +11,7 @@ import Logo from "@/components/Logo";
 import { useState, useEffect } from "react";
 import { getProjectState, clearProjectState, saveProjectState } from "@/lib/storage";
 import { useAlert } from "@/context/AlertContext";
+import MobileSidebarTrigger from "@/components/MobileSidebarTrigger";
 
 export default function DiscussPage() {
     const router = useRouter();
@@ -38,8 +39,11 @@ export default function DiscussPage() {
 
         // Fallback: Check for legacy idea
         const savedIdea = localStorage.getItem('user-idea');
+        const savedMode = localStorage.getItem('user-reply-mode');
+
         if (savedIdea) {
             setIdea(savedIdea);
+            if (savedMode) setReplyMode(savedMode);
         } else {
             router.push('/idea');
         }
@@ -98,20 +102,6 @@ export default function DiscussPage() {
         }
     };
 
-    const handleClearProject = async () => {
-        const ok = await confirm({
-            title: "Start Fresh Session?",
-            message: "This will wipe all tracked decisions and roadmap data. This cannot be undone.",
-            confirmText: "Wipe & Restart",
-            variant: "destructive"
-        });
-
-        if (ok) {
-            clearProjectState();
-            showInfo("Workspace Reset", "Project memory cleared.");
-            router.push('/idea');
-        }
-    };
 
     return (
         <div className="h-screen flex flex-col bg-background">
@@ -127,20 +117,9 @@ export default function DiscussPage() {
                         <ArrowLeft className="w-4 h-4 sm:mr-2" />
                         <span className="hidden sm:inline">Back</span>
                     </Button>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleClearProject}
-                        className="text-muted-foreground hover:text-destructive transition-colors text-[10px] sm:text-xs px-2"
-                    >
-                        <Plus className="w-4 h-4 sm:mr-1.5" />
-                        <span className="hidden sm:inline">New Project</span>
-                        <span className="sm:hidden text-muted-foreground font-bold uppercase">New</span>
-                    </Button>
                 </div>
 
-                <div className="hidden lg:flex items-center gap-2 bg-muted/30 px-3 py-1.5 rounded-2xl border border-border/20">
-                    <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest whitespace-nowrap">AI Tone</span>
+                <div className="hidden lg:flex items-center">
                     <ReplyLevelToggle mode={replyMode} onChange={handleModeChange} />
                 </div>
 

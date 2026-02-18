@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from "framer-motion";
-import { User, Code } from "lucide-react";
+import { User, Code, Sparkles, Code2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function ReplyLevelToggle({ mode, onChange }) {
@@ -22,8 +22,8 @@ export default function ReplyLevelToggle({ mode, onChange }) {
                     mode === 'non-tech' ? "text-foreground font-bold" : "text-muted-foreground hover:text-foreground"
                 )}
             >
-                <User className="w-3.5 h-3.5" />
-                <span className="text-[10px] uppercase tracking-wider">Non-Tech</span>
+                <Sparkles className="w-3.5 h-3.5" />
+                <span className="text-[10px] uppercase tracking-wider">Visionary</span>
             </button>
 
             <button
@@ -33,8 +33,8 @@ export default function ReplyLevelToggle({ mode, onChange }) {
                     mode === 'tech' ? "text-foreground font-bold" : "text-muted-foreground hover:text-foreground"
                 )}
             >
-                <Code className="w-3.5 h-3.5" />
-                <span className="text-[10px] uppercase tracking-wider">Tech</span>
+                <Code2 className="w-3.5 h-3.5" />
+                <span className="text-[10px] uppercase tracking-wider">Technical</span>
             </button>
         </div>
     );
