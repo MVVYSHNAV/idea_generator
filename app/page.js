@@ -4,7 +4,7 @@ import HeroSection from "@/components/HeroSection";
 import HowItWorks from "@/components/HowItWorks";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Plus, RotateCcw, FolderOpen } from "lucide-react";
+import { ArrowRight, Plus, RotateCcw, FolderOpen, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getProjects, createNewProject, setActiveProject } from "@/lib/project-storage";
 import { useEffect, useState } from "react";
@@ -78,6 +78,15 @@ export default function Home() {
             >
               Start New Project
               {hasProjects ? <Plus className="ml-2 w-5 h-5" /> : <ArrowRight className="ml-2 w-5 h-5" />}
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => router.push('/world-generator')}
+              className="w-full sm:w-auto text-lg px-8 py-6 rounded-xl border-primary/20 hover:bg-primary/5 transition-all group"
+            >
+              Enter New World
+              <Sparkles className="ml-2 w-5 h-5 text-purple-500 group-hover:text-purple-400 transition-colors" />
             </Button>
           </div>
         </motion.div>

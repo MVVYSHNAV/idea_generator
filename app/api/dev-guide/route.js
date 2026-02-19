@@ -1,3 +1,5 @@
+import { generateGeminiContent } from '@/lib/gemini';
+import { generateOpenRouterContent } from '@/lib/openrouter';
 import { InferenceClient } from "@huggingface/inference";
 
 const client = new InferenceClient(process.env.HF_TOKEN || process.env.HUGGING_FACE_API_KEY);
@@ -32,10 +34,7 @@ export async function POST(req) {
         } = await req.json();
 
         const levelInstructions = DEV_GUIDE_PROMPTS[replyLevel] || DEV_GUIDE_PROMPTS['tech'];
-
-        const systemPrompt = {
-            role: 'system',
-            content: `You are a Senior Software Architect and Technical Mentor.
+        const systemInstruction = `You are a Senior Software Architect and Technical Mentor.
             Your goal is to convert a business idea into a concrete, step-by-step development guide.
 
             CONTEXT:
@@ -69,9 +68,7 @@ export async function POST(req) {
             }
 
             Do NOT include any text, notes, or markdown formatting (like code blocks) outside the JSON object.
-            Just the raw JSON string.
-            `
-        };
+            Just the raw JSON string.`;
 
         const userContext = `
         Project Idea: ${idea}
@@ -84,50 +81,80 @@ export async function POST(req) {
         Scopes: ${memory?.scope?.join(', ') || 'None'}
         `;
 
-        const models = [
-            "THUDM/glm-4-9b-chat",
-            "Qwen/Qwen2.5-72B-Instruct",
-            "meta-llama/Llama-3.3-70B-Instruct"
-        ];
+        let content;
 
-        let response;
-        let lastError;
+        // 1. PRIMARY: OpenRouter
+        try {
+            console.log("Attempting Primary OpenRouter generation for Dev Guide...");
+            const openRouterResponse = await generateOpenRouterContent(
+                systemInstruction,
+                `Generate the development guide for this project:\n${userContext}`
+            );
+            if (openRouterResponse) {
+                content = openRouterResponse;
+            } else {
+                throw new Error("OpenRouter returned null");
+            }
+        } catch (orError) {
+            console.error("OpenRouter Dev Guide Failed:", orError.message);
 
-        for (const model of models) {
+            // 2. SECONDARY: Gemini
             try {
-                console.log(`Generating Dev Guide with model: ${model}`);
-                response = await client.chatCompletion({
-                    model: model,
-                    messages: [
-                        systemPrompt,
-                        { role: 'user', content: `Generate the development guide for this project:\n${userContext}` }
-                    ],
-                    max_tokens: 3500, // Increased for GLM-4
-                    temperature: 0.4,
-                });
-
-                if (response && response.choices && response.choices.length > 0) {
-                    const content = response.choices[0].message.content.trim();
-                    if (content.startsWith('{') || content.startsWith('```json') || content.startsWith('```')) {
-                        break;
-                    }
+                console.log("Attempting Secondary Gemini generation for Dev Guide...");
+                const geminiResponse = await generateGeminiContent(
+                    systemInstruction,
+                    `Generate the development guide for this project:\n${userContext}`
+                );
+                if (geminiResponse) {
+                    content = geminiResponse;
+                } else {
+                    throw new Error("Gemini returned null");
                 }
-            } catch (error) {
-                console.error(`Error with model ${model}:`, error.message);
-                lastError = error;
+            } catch (geminiError) {
+                console.error("Gemini Dev Guide Failed:", geminiError.message);
+
+                // 3. TERTIARY: Hugging Face
+                try {
+                    console.log("Attempting Tertiary HF generation for Dev Guide...");
+                    const systemPrompt = { role: 'system', content: systemInstruction };
+                    const models = [
+                        "mistralai/Mistral-7B-Instruct-v0.3",
+                        "meta-llama/Llama-3.2-3B-Instruct",
+                        "microsoft/Phi-3-mini-4k-instruct"
+                    ];
+
+                    let hfResponse;
+                    for (const model of models) {
+                        try {
+                            hfResponse = await client.chatCompletion({
+                                model: model,
+                                messages: [
+                                    systemPrompt,
+                                    { role: 'user', content: `Generate the development guide for this project:\n${userContext}` }
+                                ],
+                                max_tokens: 3500,
+                                temperature: 0.4,
+                            });
+                            if (hfResponse?.choices?.length > 0) break;
+                        } catch (e) { continue; }
+                    }
+
+                    if (hfResponse?.choices?.length > 0) {
+                        content = hfResponse.choices[0].message.content;
+                    } else {
+                        throw new Error("All HF models failed");
+                    }
+                } catch (hfError) {
+                    console.error("HF Dev Guide Failed:", hfError.message);
+                    throw new Error("All providers failed to generate dev guide");
+                }
             }
         }
 
-        if (!response || !response.choices || response.choices.length === 0) {
-            throw lastError || new Error('Failed to generate development guide');
-        }
-
-        let content = response.choices[0].message.content.trim();
-
-        // Aggressive cleanup
+        // Processing & Cleaning JSON
+        content = content.trim();
         content = content.replace(/^```json/, '').replace(/^```/, '').replace(/```$/, '');
 
-        // Find the first { and last }
         const firstOpen = content.indexOf('{');
         const lastClose = content.lastIndexOf('}');
 

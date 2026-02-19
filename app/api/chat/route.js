@@ -1,3 +1,6 @@
+import { Utils } from 'lucide-react';
+import { generateGeminiContent } from '@/lib/gemini';
+import { generateOpenRouterContent } from '@/lib/openrouter';
 import { InferenceClient } from "@huggingface/inference";
 
 const client = new InferenceClient(process.env.HF_TOKEN || process.env.HUGGING_FACE_API_KEY);
@@ -79,67 +82,121 @@ export async function POST(req) {
         const personaContent = MODE_PROMPTS[selectedMode] || MODE_PROMPTS.brainstorm;
         const replyLevelContent = REPLY_MODE_PROMPTS[replyMode] || REPLY_MODE_PROMPTS['non-tech'];
 
-        const systemPrompt = {
-            role: 'system',
-            content: `You are an expert co-founder and startup advisor strictly operating in ${selectedMode.toUpperCase()} mode. 
-            
-            PERSONA INSTRUCTIONS:
-            ${personaContent} 
-            
-            REPLY STYLE INSTRUCTIONS:
-            ${replyLevelContent}
+        let responseContent;
 
-            Keep responses concise, professional, and actionable.`
-        };
+        // 1. PRIMARY: Try OpenRouter
+        try {
+            console.log("Attempting Primary OpenRouter generation...");
+            const lastUserMessage = messages[messages.length - 1].content;
+            const systemInstruction = `You are an expert co-founder operating in ${selectedMode} mode.\n${personaContent}\n${replyLevelContent}`;
 
-        const models = [
-            "Qwen/Qwen2.5-72B-Instruct",
-            "meta-llama/Llama-3.3-70B-Instruct",
-            "mistralai/Mistral-7B-Instruct-v0.3"
-        ];
+            const openRouterResponse = await generateOpenRouterContent(systemInstruction, lastUserMessage);
+            if (openRouterResponse) {
+                responseContent = openRouterResponse;
+            } else {
+                throw new Error("OpenRouter returned null/empty response");
+            }
+        } catch (orError) {
+            console.error("OpenRouter Primary Failed:", orError.message);
 
-        let response;
-        let lastError;
-
-        for (const model of models) {
+            // 2. SECONDARY: Try Gemini
             try {
-                console.log(`Attempting chat completion with model: ${model}`);
-                response = await client.chatCompletion({
-                    model: model,
-                    messages: [systemPrompt, ...messages],
-                    max_tokens: 1000,
-                    temperature: 0.7,
-                });
+                console.log("Attempting Secondary Gemini generation...");
+                const lastUserMessage = messages[messages.length - 1].content;
+                const systemInstruction = `You are an expert co-founder operating in ${selectedMode} mode.\n${personaContent}\n${replyLevelContent}`;
 
-                if (response && response.choices && response.choices.length > 0) {
-                    break; // Success!
+                const geminiResponse = await generateGeminiContent(systemInstruction, lastUserMessage);
+                if (geminiResponse) {
+                    responseContent = geminiResponse;
+                } else {
+                    throw new Error("Gemini returned null/empty response");
                 }
-            } catch (error) {
-                console.error(`Error with model ${model}:`, error.message);
-                lastError = error;
-                // Continue to next model
+            } catch (geminiError) {
+                console.error("Gemini Secondary Failed:", geminiError.message);
+
+                // 3. TERTIARY: Try Hugging Face
+                try {
+                    console.log("Attempting Tertiary HF generation...");
+                    const systemPrompt = {
+                        role: 'system',
+                        content: `You are an expert co-founder and startup advisor strictly operating in ${selectedMode.toUpperCase()} mode. 
+                        
+                        PERSONA INSTRUCTIONS:
+                        ${personaContent} 
+                        
+                        REPLY STYLE INSTRUCTIONS:
+                        ${replyLevelContent}
+
+                        Keep responses concise, professional, and actionable.`
+                    };
+
+                    const models = [
+                        "meta-llama/Llama-3.2-3B-Instruct",
+                        "mistralai/Mistral-7B-Instruct-v0.3",
+                        "microsoft/Phi-3-mini-4k-instruct"
+                    ];
+
+                    let hfResponse;
+                    for (const model of models) {
+                        try {
+                            hfResponse = await client.chatCompletion({
+                                model: model,
+                                messages: [systemPrompt, ...messages],
+                                max_tokens: 1000,
+                                temperature: 0.7,
+                            });
+                            if (hfResponse?.choices?.length > 0) break;
+                        } catch (e) { continue; }
+                    }
+
+                    if (hfResponse?.choices?.length > 0) {
+                        responseContent = hfResponse.choices[0].message.content;
+                    } else {
+                        throw new Error("All HF models failed");
+                    }
+
+                } catch (hfError) {
+                    console.error("HF Tertiary Failed:", hfError.message);
+
+                    // 4. FINAL FALLBACK: Mock Response
+                    const fallbackResponses = {
+                        brainstorm: "I'm having trouble connecting to my creative brain right now (API Limit), but here are a few ideas to get you started:\n\n1. **Gamified Education Platform**: Turn learning into a quest-based adventure.\n2. **AI-Powered Personal Stylist**: Use computer vision to recommend outfits.\n3. **Hyper-local Community Hub**: Connect neighbors for tool sharing and events.\n4. **Sustainable Supply Chain Tracker**: Blockchain for transparent sourcing.\n5. **Virtual Interior Designer**: AR visualization for home decor.\n\nReply with the number you like!",
+                        mvp: "Since I can't reach my analysis tools, here's a general MVP approach:\n\n**Core Value:** Solve one specific problem for one specific user.\n**Key Feature:** A simple, manual process that delivers the result (Concierge MVP).\n**Success Metric:** 10 paying customers.",
+                        risk: "I can't run a full risk assessment right now, but consider these common pitfalls:\n\n1. **Market Saturation:** Are there too many competitors?\n2. **User Adoption:** Will people actually change their behavior?\n3. **Technical Complexity:** Is the solution too hard to build?",
+                        roadmap: JSON.stringify({
+                            problem_statement: "User needs X but has Y problem.",
+                            target_users: "Early adopters",
+                            key_assumptions: ["Users want this", "Tech is feasible"],
+                            mvp_features: ["Login", "Core Feature", "Payment"],
+                            roadmap_phases: [
+                                { phase: "Phase 1: Research", tasks: ["Competitor Analysis", "User Interviews"] },
+                                { phase: "Phase 2: MVP Build", tasks: ["Core Logic", "UI Design"] },
+                                { phase: "Phase 3: Launch", tasks: ["Beta Testing", "Marketing"] }
+                            ],
+                            risks: ["Low adoption", "Technical debt"],
+                            open_questions: ["How to monetize?", "Who is the ideal customer?"]
+                        }),
+                        investor: "I can't analyze the market data right now, but focus on your **CAC (Customer Acquisition Cost)** vs **LTV (Lifetime Value)**. Investors want to see a clear path to profitability and a large addressable market.",
+                        legal: "I cannot provide specific legal definitions at the moment. Generally, ensure you update your **Privacy Policy** and **Terms of Service**, and comply with local data protection laws (GDPR/CCPA)."
+                    };
+
+                    responseContent = fallbackResponses[selectedMode] || "I'm currently offline (API Quota Exceeded), but I'm here to help! Please try again later or check your API credits.";
+                }
             }
         }
 
-        if (!response || !response.choices || response.choices.length === 0) {
-            throw lastError || new Error('Invalid response format from all providers');
-        }
-
-        const reply = response.choices[0].message;
-
-        return new Response(JSON.stringify(reply), {
+        return new Response(JSON.stringify({ role: "assistant", content: responseContent }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
         });
-    } catch (error) {
-        console.error('Chat API Error:', error);
 
+    } catch (error) {
+        console.error('Chat API Fatal Error:', error);
         return new Response(JSON.stringify({
-            error: 'Failed to process request',
-            details: error.message,
-            type: error.name
+            role: "assistant",
+            content: "System Critical Error: Unable to process request."
         }), {
-            status: 500,
+            status: 200,
             headers: { 'Content-Type': 'application/json' },
         });
     }

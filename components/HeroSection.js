@@ -96,6 +96,15 @@ const HeroSection = () => {
                     >
                         See How It Works
                     </Button>
+                    <Button
+                        variant="ghost"
+                        size="lg"
+                        onClick={() => router.push("/world-generator")}
+                        className="text-lg px-6 py-6 rounded-xl hover:bg-white/5 border border-transparent hover:border-white/10"
+                    >
+                        <Sparkles className="mr-2 w-5 h-5 text-purple-400" />
+                        New World
+                    </Button>
                 </motion.div>
 
                 {/* Steps preview */}
